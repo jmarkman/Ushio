@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="newtonsoft.json" Version="12.0.3" />
     <PackageReference Include="pokeapinet" Version="3.0.0" />
   </ItemGroup>
 

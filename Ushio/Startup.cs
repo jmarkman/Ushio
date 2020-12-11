@@ -33,7 +33,7 @@ namespace Ushio
             var provider = services.BuildServiceProvider();
 
             var discord = provider.GetRequiredService<DiscordSocketClient>();
-            await discord.LoginAsync(TokenType.Bot, _config["ApiToken"]);
+            await discord.LoginAsync(TokenType.Bot, _config["ApiKeys:Discord"]);
             await discord.StartAsync();
 
             var commands = provider.GetRequiredService<CommandService>();
@@ -60,6 +60,7 @@ namespace Ushio
             }))
             .AddSingleton<CommandHandlingService>()
             .AddSingleton<PokemonApiService>()
+            .AddSingleton(new WeatherApiService(_config["ApiKeys:OpenWeatherMap"]))
             .AddSingleton(_config);
         }
     }
