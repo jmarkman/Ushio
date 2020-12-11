@@ -30,9 +30,20 @@ namespace Ushio.Services
             _discordClient.MessageReceived -= OnMessageRecievedAsync;
         }
 
-        private async Task OnMessageRecievedAsync(SocketMessage arg)
+        private async Task OnMessageRecievedAsync(SocketMessage socketMessage)
         {
-            throw new NotImplementedException();
+            if (!(socketMessage is SocketUserMessage msg))
+            {
+                return;
+            }
+
+            if (!(socketMessage.Channel is SocketGuildChannel))
+            {
+                return;
+            }
+
+            int argPos = 0;
+            var msgContext = new SocketCommandContext(_discordClient, msg);
         }
     }
 }
