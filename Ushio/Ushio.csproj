@@ -12,4 +12,14 @@
     <PackageReference Include="microsoft.extensions.dependencyinjection" Version="5.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Ushio.ApiServices\Ushio.ApiServices.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Common\appSettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

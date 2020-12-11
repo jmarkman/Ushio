@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Ushio.ApiServices;
 using Ushio.Services;
 
 namespace Ushio
@@ -18,7 +19,7 @@ namespace Ushio
         public Startup(string[] args)
         {
             var cfgBuilder = new ConfigurationBuilder()
-                .SetBasePath(Path.Combine(AppContext.BaseDirectory, "Configuration"))
+                .SetBasePath(Path.Combine(AppContext.BaseDirectory, "Common"))
                 .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true);
 
             _config = cfgBuilder.Build();
@@ -56,7 +57,10 @@ namespace Ushio
                 IgnoreExtraArgs = false,
                 LogLevel = LogSeverity.Verbose,
                 DefaultRunMode = RunMode.Async
-            }));
+            }))
+            .AddSingleton<CommandHandlingService>()
+            .AddSingleton<PokemonApiService>()
+            .AddSingleton(_config);
         }
     }
 }
