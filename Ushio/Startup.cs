@@ -1,10 +1,13 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
+using Ushio.Services;
 
 namespace Ushio
 {
@@ -23,12 +26,37 @@ namespace Ushio
 
         public async Task StartAsync()
         {
+            var services = new ServiceCollection();
+            ConfigureServices(services);
 
+            var provider = services.BuildServiceProvider();
+
+            var discord = provider.GetRequiredService<DiscordSocketClient>();
+            await discord.LoginAsync(TokenType.Bot, _config["ApiToken"]);
+            await discord.StartAsync();
+
+            var commands = provider.GetRequiredService<CommandService>();
+            await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), provider);
+
+            provider.GetRequiredService<CommandHandlingService>().Start();
+
+            await Task.Delay(-1);   
         }
 
         private void ConfigureServices(ServiceCollection services)
         {
-
+            services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+            {
+                LogLevel = LogSeverity.Verbose,
+                MessageCacheSize = 1000
+            }))
+            .AddSingleton(new CommandService(new CommandServiceConfig
+            {
+                CaseSensitiveCommands = false,
+                IgnoreExtraArgs = false,
+                LogLevel = LogSeverity.Verbose,
+                DefaultRunMode = RunMode.Async
+            }));
         }
     }
 }
