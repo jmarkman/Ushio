@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,25 +13,27 @@ namespace Ushio.Services
         private readonly CommandService _commandService;
         private readonly IServiceProvider _serviceProvider;
         private readonly DiscordSocketClient _discordClient;
+        private readonly IConfigurationRoot _config;
 
-        public CommandHandlingService(DiscordSocketClient client, CommandService cmdSvc, IServiceProvider svcProvider)
+        public CommandHandlingService(DiscordSocketClient client, CommandService cmdSvc, IServiceProvider svcProvider, IConfigurationRoot cfg)
         {
             _discordClient = client;
             _commandService = cmdSvc;
             _serviceProvider = svcProvider;
+            _config = cfg;
         }
 
         public void Start()
         {
-            _discordClient.MessageReceived += OnMessageRecievedAsync;
+            _discordClient.MessageReceived += OnMessageReceivedAsync;
         }
 
         public void Stop()
         {
-            _discordClient.MessageReceived -= OnMessageRecievedAsync;
+            _discordClient.MessageReceived -= OnMessageReceivedAsync;
         }
 
-        private async Task OnMessageRecievedAsync(SocketMessage socketMessage)
+        private async Task OnMessageReceivedAsync(SocketMessage socketMessage)
         {
             if (!(socketMessage is SocketUserMessage msg))
             {
@@ -44,6 +47,16 @@ namespace Ushio.Services
 
             int argPos = 0;
             var msgContext = new SocketCommandContext(_discordClient, msg);
+
+            if (msg.HasStringPrefix(_config["Prefix"], ref argPos))
+            {
+                var result = await _commandService.ExecuteAsync(msgContext, argPos, _serviceProvider);
+
+                if (!result.IsSuccess)
+                {
+                    await msgContext.Channel.SendMessageAsync(result.ToString());
+                }
+            }
         }
     }
 }
