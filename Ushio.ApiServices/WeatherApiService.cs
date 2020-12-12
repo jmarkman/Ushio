@@ -27,7 +27,7 @@ namespace Ushio.ApiServices
         /// <param name="zipCode">The postal code for the area</param>
         /// <param name="useImperial">Uses imperial measurements by default, specify false to this parameter to use metric</param>
         /// <returns></returns>
-        public async Task<WeatherApiResponse> GetWeatherByZipCodeAsync(string zipCode, bool useImperial = true)
+        public async Task<WeatherApiResponse> GetWeatherByZipCodeAsync(int zipCode, bool useImperial = true)
         {
             StringBuilder urlParamsBuilder = new StringBuilder();
             urlParamsBuilder.Append($"weather?zip={zipCode},us");
