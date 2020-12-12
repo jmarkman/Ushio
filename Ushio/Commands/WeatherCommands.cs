@@ -3,6 +3,7 @@ using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
 using Ushio.ApiServices.DataObjects.Weather;
@@ -34,22 +35,41 @@ namespace Ushio.Commands
                 Title = $"Weather for {postalCode}",
                 Fields = CreateWeatherEmbedFields(weatherData)
             }
-            .WithFooter(new EmbedFooterBuilder { Text = DateTimeOffset.FromUnixTimeSeconds(weatherData.UnixTimeWhenGathered).ToString()})
+            .WithFooter(new EmbedFooterBuilder { Text = DateTimeOffset.FromUnixTimeSeconds(weatherData.UnixTimeWhenGathered).ToString() })
             .Build();
 
             await ReplyAsync(embed: weatherEmbed);
-
-
         }
 
         /// <summary>
         /// Retrieves the current weather forecast for the provided location.
         /// </summary>
         /// <param name="location"></param>
-        /// <returns></returns>
+        [Command("weather")]
         public async Task GetWeatherFor(string location)
         {
+            WeatherApiResponse weatherData;
 
+            try
+            {
+                weatherData = await weatherApi.GetWeatherByNamedLocationAsync(location);
+            }
+            catch (WebException httpGetExc)
+            {
+                await ReplyAsync(httpGetExc.Message);
+                return;
+            }
+            
+
+            var weatherEmbed = new EmbedBuilder
+            {
+                Title = $"Weather for {location}",
+                Fields = CreateWeatherEmbedFields(weatherData)
+            }
+            .WithFooter(new EmbedFooterBuilder { Text = DateTimeOffset.FromUnixTimeSeconds(weatherData.UnixTimeWhenGathered).ToString() })
+            .Build();
+
+            await ReplyAsync(embed: weatherEmbed);
         }
 
         private List<EmbedFieldBuilder> CreateWeatherEmbedFields(WeatherApiResponse weatherData)

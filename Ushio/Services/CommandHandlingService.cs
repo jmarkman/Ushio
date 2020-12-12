@@ -3,8 +3,10 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Ushio.Commands.TypeReaders;
 
 namespace Ushio.Services
 {
@@ -23,9 +25,12 @@ namespace Ushio.Services
             _config = cfg;
         }
 
-        public void Start()
+        public async Task StartAsync()
         {
             _discordClient.MessageReceived += OnMessageReceivedAsync;
+            _commandService.AddTypeReader(typeof(int), new IntTypeReader());
+
+            await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
         }
 
         public void Stop()

@@ -39,7 +39,7 @@ namespace Ushio
             var commands = provider.GetRequiredService<CommandService>();
             await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), provider);
 
-            provider.GetRequiredService<CommandHandlingService>().Start();
+            await provider.GetRequiredService<CommandHandlingService>().StartAsync();
 
             await Task.Delay(-1);   
         }

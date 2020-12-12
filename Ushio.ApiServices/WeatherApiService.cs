@@ -89,7 +89,9 @@ namespace Ushio.ApiServices
             }
             else
             {
-                throw new WebException($"The weather query failed to return valid data. Query: '{query}'");
+                var idx = query.LastIndexOf("&");
+                var errQuery = query.Substring(0, idx);
+                throw new WebException($"[{(int)response.StatusCode} {response.ReasonPhrase}] The weather query failed to return valid data.{Environment.NewLine}{Environment.NewLine}Query: '{errQuery}'");
             }
 
             return weatherData;
