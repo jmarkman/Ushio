@@ -19,3 +19,7 @@ The shipgirls can also be modified with various parts to alter their stats, much
 
 - Clip Service (get either Twitch clip or server-hosted clip and send as link to Discord, allowing Discord to embed it)
 - Street Fighter 5 Frame Data (Yaksha bot has crappy move name inference and poor data organization)
+
+## Handling Tables For Features
+
+A legible way of separating things seems to be dividing features into global and local. Global features are those that are generic across all servers, like read-only queries for things like fighting game frame data. Local features vary per server, which include things like stored links and quotes. Global features will leverage an associated table (or tables) for a given global feature, and local features will generate a new table (or set of tables) for a given local feature.
