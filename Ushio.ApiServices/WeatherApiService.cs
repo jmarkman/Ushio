@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Ushio.ApiServices.DataObjects.Weather;
 
@@ -22,12 +23,31 @@ namespace Ushio.ApiServices
         }
 
         /// <summary>
+        /// Retrieves the current weather for the specified location
+        /// </summary>
+        /// <param name="input">The location as either a postal code or a named location</param>
+        /// <returns>A <see cref="WeatherApiResponse"/> object containing the current forecast</returns>
+        public async Task<WeatherApiResponse> GetCurrentWeatherAsync(string input)
+        {
+            Match inputMatch = Regex.Match(input, @"\d{5}");
+
+            if (inputMatch.Success)
+            {
+                return await GetWeatherByZipCodeAsync(input);
+            }
+            else
+            {
+                return await GetWeatherByNamedLocationAsync(input);
+            }
+        }
+
+        /// <summary>
         /// Get the weather for the specified location via postal (ZIP) code.
         /// </summary>
         /// <param name="zipCode">The postal code for the area</param>
         /// <param name="useImperial">Uses imperial measurements by default, specify false to this parameter to use metric</param>
         /// <returns></returns>
-        public async Task<WeatherApiResponse> GetWeatherByZipCodeAsync(int zipCode, bool useImperial = true)
+        private async Task<WeatherApiResponse> GetWeatherByZipCodeAsync(string zipCode, bool useImperial = true)
         {
             StringBuilder urlParamsBuilder = new StringBuilder();
             urlParamsBuilder.Append($"weather?zip={zipCode},us");
@@ -43,7 +63,7 @@ namespace Ushio.ApiServices
 
             urlParamsBuilder.Append($"&appid={_apiKey}");
 
-            return await GetWeatherAsync(urlParamsBuilder.ToString());
+            return await GetWeatherDataAsync(urlParamsBuilder.ToString());
         }
 
         /// <summary>
@@ -53,7 +73,7 @@ namespace Ushio.ApiServices
         /// <param name="location">The location as a singular code or series of codes</param>
         /// <param name="useImperial">Uses imperial measurements by default, specify false to this parameter to use metric</param>
         /// <returns>The weather for the specified named location as a <see cref="WeatherApiResponse"/></returns>
-        public async Task<WeatherApiResponse> GetWeatherByNamedLocationAsync(string location, bool useImperial = true)
+        private async Task<WeatherApiResponse> GetWeatherByNamedLocationAsync(string location, bool useImperial = true)
         {
             StringBuilder urlParamsBuilder = new StringBuilder();
             urlParamsBuilder.Append($"weather?q={location}");
@@ -69,7 +89,7 @@ namespace Ushio.ApiServices
 
             urlParamsBuilder.Append($"&appid={_apiKey}");
 
-            return await GetWeatherAsync(urlParamsBuilder.ToString());
+            return await GetWeatherDataAsync(urlParamsBuilder.ToString());
         }
 
         /// <summary>
@@ -77,7 +97,7 @@ namespace Ushio.ApiServices
         /// </summary>
         /// <param name="query">The url parameters that make up the weather data query</param>
         /// <returns>The weather for the specified region as a <see cref="WeatherApiResponse"/></returns>
-        private async Task<WeatherApiResponse> GetWeatherAsync(string query)
+        private async Task<WeatherApiResponse> GetWeatherDataAsync(string query)
         {
             WeatherApiResponse weatherData;
 

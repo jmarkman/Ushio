@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -13,6 +12,7 @@ namespace Ushio.Commands
     [Name("WeatherForecast")]
     public class WeatherCommands : ModuleBase<SocketCommandContext>
     {
+        private const string weatherIconUrl = "http://openweathermap.org/img/w/";
         private readonly WeatherApiService weatherApi;
 
         public WeatherCommands(WeatherApiService weather)
@@ -21,79 +21,47 @@ namespace Ushio.Commands
         }
 
         /// <summary>
-        /// Retrieves the current weather forecast for the provided postal (ZIP) code.
-        /// ZIP codes are only supported in the United States
+        /// Retrieves the current weather forecast for the provided location data
         /// </summary>
-        /// <param name="postalCode">The postal (ZIP) code, a 5-digit integer</param>
+        /// <param name="input">This method should receive either a 5-digit zip code
+        /// or a location string as input</param>
         [Command("weather")]
-        public async Task GetWeatherFor(int postalCode)
-        {
-            var weatherData = await weatherApi.GetWeatherByZipCodeAsync(postalCode);
-
-            var weatherEmbed = new EmbedBuilder
-            {
-                Title = $"Weather for {postalCode}",
-                Fields = CreateWeatherEmbedFields(weatherData)
-            }
-            .WithFooter(new EmbedFooterBuilder { Text = DateTimeOffset.FromUnixTimeSeconds(weatherData.UnixTimeWhenGathered).ToString() })
-            .Build();
-
-            await ReplyAsync(embed: weatherEmbed);
-        }
-
-        /// <summary>
-        /// Retrieves the current weather forecast for the provided location.
-        /// </summary>
-        /// <param name="location"></param>
-        [Command("weather")]
-        public async Task GetWeatherFor(string location)
+        public async Task GetWeatherFor(string input)
         {
             WeatherApiResponse weatherData;
 
             try
             {
-                weatherData = await weatherApi.GetWeatherByNamedLocationAsync(location);
+                weatherData = await weatherApi.GetCurrentWeatherAsync(input);
+
+                await ReplyAsync(embed: CreateWeatherEmbed(weatherData));
             }
             catch (WebException httpGetExc)
             {
                 await ReplyAsync(httpGetExc.Message);
-                return;
             }
-            
-
-            var weatherEmbed = new EmbedBuilder
-            {
-                Title = $"Weather for {location}",
-                Fields = CreateWeatherEmbedFields(weatherData)
-            }
-            .WithFooter(new EmbedFooterBuilder { Text = DateTimeOffset.FromUnixTimeSeconds(weatherData.UnixTimeWhenGathered).ToString() })
-            .Build();
-
-            await ReplyAsync(embed: weatherEmbed);
         }
 
-        private List<EmbedFieldBuilder> CreateWeatherEmbedFields(WeatherApiResponse weatherData)
+        /// <summary>
+        /// Creates the embed used for displaying the weather data to the end user
+        /// </summary>
+        /// <param name="weatherData">The weather data as a <see cref="WeatherApiResponse"/> object</param>
+        /// <returns>A discord <see cref="Embed"/> object</returns>
+        private Embed CreateWeatherEmbed(WeatherApiResponse weatherData)
         {
-            List<EmbedFieldBuilder> weatherInfoFields = new List<EmbedFieldBuilder>()
-                {
-                    new EmbedFieldBuilder
-                    {
-                        Name = "City Name",
-                        Value = weatherData.CityName
-                    },
-                    new EmbedFieldBuilder
-                    {
-                        Name = "Current Temperature",
-                        Value = weatherData.TemperatureAndPressure.Temperature
-                    },
-                    new EmbedFieldBuilder
-                    {
-                        Name = "Current Weather Condition",
-                        Value = weatherData.Weather.FirstOrDefault().WeatherCondition
-                    }
-                };
+            var weatherEmbed = new EmbedBuilder()
+            .WithTitle($"Current weather for {weatherData.CityName} ({weatherData.RegionInfo.CountryCode})")
+            .WithImageUrl($"{weatherIconUrl}{weatherData.Weather.FirstOrDefault().WeatherConditionIcon}.png")
+            .AddField("Temperature", (int)weatherData.TemperatureAndPressure.Temperature, true)
+            .AddField("Condition", weatherData.Weather.FirstOrDefault().WeatherCondition, true)
+            .AddField("Humidity", $"{weatherData.TemperatureAndPressure.Humidity}%", true)
+            .AddField("High", (int)weatherData.TemperatureAndPressure.MaximumTemperature, true)
+            .AddField("Low", (int)weatherData.TemperatureAndPressure.MinimumTemperature, true)
+            .AddField("Cloud Coverage", $"{weatherData.CloudInfo.CloudCoveragePercent}%", true)
+            .WithFooter(new EmbedFooterBuilder { Text = DateTime.Now.ToString("f")})
+            .Build();
 
-            return weatherInfoFields;
+            return weatherEmbed;
         }
     }
 }
