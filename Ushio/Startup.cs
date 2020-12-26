@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -8,6 +9,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
+using Ushio.Infrastructure.Database;
 using Ushio.Services;
 
 namespace Ushio
@@ -61,6 +63,7 @@ namespace Ushio
             .AddSingleton<CommandHandlingService>()
             .AddSingleton<PokemonApiService>()
             .AddSingleton(new WeatherApiService(_config["ApiKeys:OpenWeatherMap"]))
+            .AddDbContext<UshioDbContext>(options => options.UseNpgsql(_config["ConnectionStrings:Database"]))
             .AddSingleton(_config);
         }
     }
