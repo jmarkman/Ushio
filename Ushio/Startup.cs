@@ -52,19 +52,21 @@ namespace Ushio
             {
                 LogLevel = LogSeverity.Verbose,
                 MessageCacheSize = 1000
-            }))
-            .AddSingleton(new CommandService(new CommandServiceConfig
+            }));
+
+            services.AddSingleton(new CommandService(new CommandServiceConfig
             {
                 CaseSensitiveCommands = false,
                 IgnoreExtraArgs = false,
                 LogLevel = LogSeverity.Verbose,
                 DefaultRunMode = RunMode.Async
-            }))
-            .AddSingleton<CommandHandlingService>()
-            .AddSingleton<PokemonApiService>()
-            .AddSingleton(new WeatherApiService(_config["ApiKeys:OpenWeatherMap"]))
-            .AddDbContext<UshioDbContext>(options => options.UseNpgsql(_config["ConnectionStrings:Database"]))
-            .AddSingleton(_config);
+            }));
+
+            services.AddSingleton<CommandHandlingService>();
+            services.AddSingleton<PokemonApiService>();
+            services.AddSingleton(new WeatherApiService(_config["ApiKeys:OpenWeatherMap"]));
+            services.AddDbContext<UshioDbContext>(options => options.UseNpgsql(_config["ConnectionStrings:Database"]));
+            services.AddSingleton(_config);
         }
     }
 }
