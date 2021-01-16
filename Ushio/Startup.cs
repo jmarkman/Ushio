@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
 using Ushio.Infrastructure.Database;
+using Ushio.Infrastructure.Database.Repositories;
 using Ushio.Services;
 
 namespace Ushio
@@ -65,6 +66,7 @@ namespace Ushio
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<PokemonApiService>();
             services.AddSingleton(new WeatherApiService(_config["ApiKeys:OpenWeatherMap"]));
+            services.AddSingleton<VideoClipRepository>();
             services.AddDbContext<UshioDbContext>(options => options.UseNpgsql(_config["ConnectionStrings:Database"]));
             services.AddSingleton(_config);
         }

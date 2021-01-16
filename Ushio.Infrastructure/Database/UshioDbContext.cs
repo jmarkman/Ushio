@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using Ushio.Infrastructure.Database.Data.Models;
+using Ushio.Data;
 
 namespace Ushio.Infrastructure.Database
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Ushio.Infrastructure.Database.Data.Models
+namespace Ushio.Data
 {
     public class VideoClip
     {
