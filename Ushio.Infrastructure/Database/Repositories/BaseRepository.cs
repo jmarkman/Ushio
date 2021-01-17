@@ -9,7 +9,7 @@ namespace Ushio.Infrastructure.Database.Repositories
 {
     public abstract class BaseRepository<T> : IRepository<T> where T : class
     {
-        private UshioDbContext dbContext;
+        protected UshioDbContext dbContext;
 
         public BaseRepository(UshioDbContext context)
         {

@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ushio.Data;
 using Ushio.Infrastructure.Database.Repositories;
 
 namespace Ushio.Commands
@@ -18,30 +20,85 @@ namespace Ushio.Commands
             _clipRepository = repo;
         }
 
-        [Command("testclip")]
-        public async Task GetTestClip()
-        {
-            var clipData = await _clipRepository.Get(1);
-
-            await ReplyAsync($"{clipData.Title} -- {clipData.Link}");
-        }
-
+        /// <summary>
+        /// Locates a clip with a matching title and replies to the source channel
+        /// with the clip URL and its title, leveraging Discord's auto-embed for
+        /// third-party media links like YouTube, Twitch, etc.
+        /// </summary>
+        /// <param name="clipTitle">The title associated with the clip when it was first added</param>
         [Command("clip")]
-        public async Task GetClipByTitle(string clipTitle)
+        public async Task GetClipByMatchingTitle([Remainder]string clipTitle)
         {
-            await ReplyAsync($"Clip by title: '{clipTitle}'");
+            var requestedClip = (await _clipRepository.Find(c => c.Title.ToLower() == $"{clipTitle.ToLower()}")).FirstOrDefault();
+
+            if (requestedClip != null)
+            {
+                await ReplyAsync($"{requestedClip.Link} -- {requestedClip.Title}");
+            }
+            else
+            {
+                await ReplyAsync($"Could not find video clip '{clipTitle}'. The '!clip' command performs exact title searches.");
+            }
         }
 
+        /// <summary>
+        /// Locates a clip by its numeric ID and replies to the source channel
+        /// with the clip URL and its title, leveraging Discord's auto-embed for
+        /// third-party media links like YouTube, Twitch, etc.
+        /// </summary>
+        /// <param name="clipId">The numeric ID associated with the clip</param>
         [Command("clip")]
         public async Task GetClipById(int clipId)
         {
-            await ReplyAsync($"Clip by ID: '{clipId}'");
+            var requestedClip = (await _clipRepository.Find(c => c.Id == clipId)).FirstOrDefault();
+
+            if (requestedClip != null)
+            {
+                await ReplyAsync($"{requestedClip.Link} -- {requestedClip.Title}");
+            }
+            else
+            {
+                await ReplyAsync($"Could not find video clip ID: '{clipId}'.");
+            }
         }
 
+        /// <summary>
+        /// Adds a new clip to the database
+        /// </summary>
+        /// <param name="link">The hyperlink to the video</param>
+        /// <param name="title"></param>
+        /// <returns>If successfully added, the clip's data as it exists in the database,
+        /// which is sent as a message to the source channel</returns>
         [Command("addclip")]
-        public async Task AddNewClip(string link, string title)
+        public async Task AddNewClip(string link, [Remainder]string title)
         {
-            throw new NotImplementedException();
+            var possibleMatchingClips = await _clipRepository.Find(c => c.Link.ToLower() == link.ToLower());
+
+            if (possibleMatchingClips.Any())
+            {
+                await ReplyAsync($"A clip with the specified hyperlink already exists, clip ID: {possibleMatchingClips.FirstOrDefault().Id}");
+                return;
+            }
+
+            VideoClip newClip = new VideoClip()
+            {
+                Title = title,
+                Link = link,
+                AddedBy = Context.Message.Author.Username,
+                AddedOn = DateTime.Now
+            };
+
+            var addedClip = await _clipRepository.Add(newClip);
+            await _clipRepository.SaveChanges();
+
+            if (addedClip != null)
+            {
+                await ReplyAsync($"{addedClip.AddedBy} added clip '{addedClip.Title}', ID: '{addedClip.Id}'");
+            }
+            else
+            {
+                await ReplyAsync($"Failed to add clip!");
+            }
         }
     }
 }
