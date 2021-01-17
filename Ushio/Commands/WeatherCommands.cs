@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
-using Ushio.ApiServices.DataObjects.Weather;
+using Ushio.Data.Weather;
 
 namespace Ushio.Commands
 {
