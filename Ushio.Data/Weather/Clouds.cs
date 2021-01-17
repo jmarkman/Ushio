@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Ushio.ApiServices.DataObjects.Weather
+namespace Ushio.Data.Weather
 {
     public class Clouds
     {

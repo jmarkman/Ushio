@@ -9,4 +9,8 @@
     <PackageReference Include="pokeapinet" Version="3.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Ushio.Data\Ushio.Data.csproj" />
+  </ItemGroup>
+
 </Project>

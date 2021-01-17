@@ -16,28 +16,44 @@ namespace Ushio.Infrastructure.Database.Repositories
             dbContext = context;
         }
 
-        public async Task<T> Add(T entity)
+        public virtual async Task<T> AddAsync(T entity)
         {
             var addedItem = await dbContext.AddAsync(entity);
             return addedItem.Entity;
         }
 
-        public async Task<IEnumerable<T>> All()
+        public virtual async Task<T> UpdateAsync(T entity)
+        {
+            dbContext.Update(entity);
+            await SaveChangesAsync();
+
+            return entity;
+        }
+
+        public virtual async Task<T> DeleteAsync(T entity)
+        {
+            dbContext.Remove(entity);
+            await SaveChangesAsync();
+
+            return entity;
+        }
+
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
             return await dbContext.Set<T>().ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> Find(Expression<Func<T, bool>> expression)
+        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression)
         {
             return await dbContext.Set<T>().AsQueryable().Where(expression).ToListAsync();
         }
 
-        public async Task<T> Get(int id)
+        public virtual async Task<T> GetAsync(int id)
         {
             return await dbContext.FindAsync<T>(id);
         }
 
-        public async Task<int> SaveChanges()
+        public virtual async Task<int> SaveChangesAsync()
         {
             return await dbContext.SaveChangesAsync();
         }

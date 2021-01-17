@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Ushio.ApiServices.DataObjects.Weather;
+using Ushio.Data.Weather;
 
 namespace Ushio.ApiServices
 {
@@ -122,8 +122,10 @@ namespace Ushio.ApiServices
         /// </summary>
         private static HttpClient CreateHttpClient()
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("https://api.openweathermap.org/data/2.5/weather");
+            var client = new HttpClient
+            {
+                BaseAddress = new Uri("https://api.openweathermap.org/data/2.5/weather")
+            };
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             return client;

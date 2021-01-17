@@ -1,9 +1,6 @@
 ﻿using Discord.Commands;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Ushio.Data;
 using Ushio.Infrastructure.Database.Repositories;
@@ -29,7 +26,7 @@ namespace Ushio.Commands
         [Command("clip")]
         public async Task GetClipByMatchingTitle([Remainder]string clipTitle)
         {
-            var requestedClip = (await _clipRepository.Find(c => c.Title.ToLower() == $"{clipTitle.ToLower()}")).FirstOrDefault();
+            var requestedClip = (await _clipRepository.FindAsync(c => c.Title.ToLower() == $"{clipTitle.ToLower()}")).FirstOrDefault();
 
             if (requestedClip != null)
             {
@@ -50,7 +47,7 @@ namespace Ushio.Commands
         [Command("clip")]
         public async Task GetClipById(int clipId)
         {
-            var requestedClip = (await _clipRepository.Find(c => c.Id == clipId)).FirstOrDefault();
+            var requestedClip = (await _clipRepository.FindAsync(c => c.Id == clipId)).FirstOrDefault();
 
             if (requestedClip != null)
             {
@@ -72,7 +69,7 @@ namespace Ushio.Commands
         [Command("addclip")]
         public async Task AddNewClip(string link, [Remainder]string title)
         {
-            var possibleMatchingClips = await _clipRepository.Find(c => c.Link.ToLower() == link.ToLower());
+            var possibleMatchingClips = await _clipRepository.FindAsync(c => c.Link.ToLower() == link.ToLower());
 
             if (possibleMatchingClips.Any())
             {
@@ -88,8 +85,8 @@ namespace Ushio.Commands
                 AddedOn = DateTime.Now
             };
 
-            var addedClip = await _clipRepository.Add(newClip);
-            await _clipRepository.SaveChanges();
+            var addedClip = await _clipRepository.AddAsync(newClip);
+            await _clipRepository.SaveChangesAsync();
 
             if (addedClip != null)
             {

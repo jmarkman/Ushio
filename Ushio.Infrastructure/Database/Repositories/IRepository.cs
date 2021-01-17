@@ -8,10 +8,11 @@ namespace Ushio.Infrastructure.Database.Repositories
 {
     public interface IRepository<T>
     {
-        Task<T> Add(T entity);
-        Task<T> Get(int id);
-        Task<IEnumerable<T>> All();
-        Task<IEnumerable<T>> Find(Expression<Func<T, bool>> expression);
-        Task<int> SaveChanges();
+        Task<T> AddAsync(T entity);
+        Task<T> UpdateAsync(T entity);
+        Task<T> GetAsync(int id);
+        Task<IEnumerable<T>> GetAllAsync();
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression);
+        Task<int> SaveChangesAsync();
     }
 }

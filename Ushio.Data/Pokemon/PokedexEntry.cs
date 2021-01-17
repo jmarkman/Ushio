@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ushio.ApiServices.DataObjects
+namespace Ushio.Data.Pokemon
 {
     public class PokedexEntry
     {

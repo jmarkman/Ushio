@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ushio.ApiServices.DataObjects;
+using Ushio.Data.Pokemon;
 
 namespace Ushio.ApiServices
 {
@@ -13,7 +13,7 @@ namespace Ushio.ApiServices
         /// This instance of the <see cref="Random"/> class will be used to select some 
         /// pseudorandom entry from the list of pokedex entries
         /// </summary>
-        private Random rnd;
+        private readonly Random rnd;
 
         public PokemonApiService()
         {
