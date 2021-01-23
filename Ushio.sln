@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ushio.ApiServices", "Ushio.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ushio.Infrastructure", "Ushio.Infrastructure\Ushio.Infrastructure.csproj", "{3415319E-496E-4016-807D-992303D075B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ushio.Data", "Ushio.Data\Ushio.Data.csproj", "{E7D5F274-A114-48F3-99DC-F3610FFDABAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ushio.Data", "Ushio.Data\Ushio.Data.csproj", "{E7D5F274-A114-48F3-99DC-F3610FFDABAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ushio.Core", "Ushio.Core\Ushio.Core.csproj", "{50D1589A-0BBF-4C22-A6C4-9C7BDE7F3767}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{E7D5F274-A114-48F3-99DC-F3610FFDABAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E7D5F274-A114-48F3-99DC-F3610FFDABAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7D5F274-A114-48F3-99DC-F3610FFDABAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50D1589A-0BBF-4C22-A6C4-9C7BDE7F3767}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50D1589A-0BBF-4C22-A6C4-9C7BDE7F3767}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50D1589A-0BBF-4C22-A6C4-9C7BDE7F3767}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50D1589A-0BBF-4C22-A6C4-9C7BDE7F3767}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

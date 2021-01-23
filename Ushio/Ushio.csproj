@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ushio.ApiServices\Ushio.ApiServices.csproj" />
+    <ProjectReference Include="..\Ushio.Core\Ushio.Core.csproj" />
     <ProjectReference Include="..\Ushio.Infrastructure\Ushio.Infrastructure.csproj" />
   </ItemGroup>
 
