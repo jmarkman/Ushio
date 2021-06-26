@@ -1,17 +1,21 @@
 ﻿using Discord.Commands;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Ushio.Commands.NamedArgs;
+using Ushio.Core;
 
 namespace Ushio.Commands
 {
     public class FightingGameVodCommands : ModuleBase<SocketCommandContext>
     {
-        public FightingGameVodCommands()
-        {
+        private readonly GameAbbreviations abbreviations;
 
+        public FightingGameVodCommands(GameAbbreviations a)
+        {
+            abbreviations = a;
         }
 
         /// <summary>
@@ -23,7 +27,7 @@ namespace Ushio.Commands
         [Command("vod")]
         public async Task GetVod(string game, VodFilter filter = null)
         {
-
+            var fullGameName = GetFullGameName(game);
         }
 
         /// <summary>
@@ -34,6 +38,20 @@ namespace Ushio.Commands
         public async Task GetThirdStrikeClip(string clipNumber = "")
         {
 
+        }
+
+        private string GetFullGameName(string game)
+        {
+            var fullGameName = string.Empty;
+
+            fullGameName = abbreviations.List.Where(g => g.Name == game).Select(game => game.Name).FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(fullGameName))
+            {
+                fullGameName = abbreviations.List.Where(g => g.Aliases.Contains(game)).Select(game => game.Name).FirstOrDefault();
+            }
+
+            return fullGameName;
         }
     }
 }

@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ushio.Infrastructure", "Ush
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ushio.Data", "Ushio.Data\Ushio.Data.csproj", "{E7D5F274-A114-48F3-99DC-F3610FFDABAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ushio.Core", "Ushio.Core\Ushio.Core.csproj", "{50D1589A-0BBF-4C22-A6C4-9C7BDE7F3767}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ushio.Core", "Ushio.Core\Ushio.Core.csproj", "{50D1589A-0BBF-4C22-A6C4-9C7BDE7F3767}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
