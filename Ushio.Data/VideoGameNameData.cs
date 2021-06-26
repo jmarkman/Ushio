@@ -2,7 +2,7 @@
 
 namespace Ushio.Data
 {
-    public class Game
+    public class VideoGameNameData
     {
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }

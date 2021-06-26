@@ -5,11 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="newtonsoft.json" Version="12.0.3" />
+    <PackageReference Include="google.apis.youtube.v3" Version="1.52.0.2364" />
+    <PackageReference Include="newtonsoft.json" Version="13.0.1" />
     <PackageReference Include="pokeapinet" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Ushio.Core\Ushio.Core.csproj" />
     <ProjectReference Include="..\Ushio.Data\Ushio.Data.csproj" />
   </ItemGroup>
 

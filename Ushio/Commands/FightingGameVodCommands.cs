@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ushio.ApiServices;
 using Ushio.Commands.NamedArgs;
 using Ushio.Core;
 
@@ -11,11 +12,13 @@ namespace Ushio.Commands
 {
     public class FightingGameVodCommands : ModuleBase<SocketCommandContext>
     {
-        private readonly GameAbbreviations abbreviations;
+        private readonly UshioConstants ushioConstants;
+        private readonly YouTubeApiService youtubeApiSvc;
 
-        public FightingGameVodCommands(GameAbbreviations a)
+        public FightingGameVodCommands(YouTubeApiService ytApiSvc, UshioConstants constants)
         {
-            abbreviations = a;
+            youtubeApiSvc = ytApiSvc;
+            ushioConstants = constants;
         }
 
         /// <summary>
@@ -28,27 +31,46 @@ namespace Ushio.Commands
         public async Task GetVod(string game, VodFilter filter = null)
         {
             var fullGameName = GetFullGameName(game);
+
+            await ReplyAsync("Not Implemented");
         }
 
         /// <summary>
-        /// Gets a specific clip (i.e., clip####) from the 3rd STRIKE channel on YouTube
+        /// Gets either a specific clip (i.e., clip####) or a random clip from the 
+        /// 3rd STRIKE channel on YouTube. If no number is provided, retrieves a
+        /// random clip.
         /// </summary>
         /// <param name="clipNumber">The number part of the title</param>
         [Command("3s")]
         public async Task GetThirdStrikeClip(string clipNumber = "")
         {
+            var thirdStrikeClip = await youtubeApiSvc.GetRandomThirdStrikeClip();
 
+            if (thirdStrikeClip != null)
+            {
+                await ReplyAsync(thirdStrikeClip.GetVideoUrl());
+            }
         }
 
+        /// <summary>
+        /// Retrieves the full name of the game to source vods for from an abbreviation
+        /// or shorthand way for referring to the game (i.e., sf5 for Street Fighter 5)
+        /// </summary>
+        /// <param name="game">The abbreviated or shorthand name for the game</param>
+        /// <returns>The full name of the game as a string</returns>
         private string GetFullGameName(string game)
         {
             var fullGameName = string.Empty;
 
-            fullGameName = abbreviations.List.Where(g => g.Name == game).Select(game => game.Name).FirstOrDefault();
+            fullGameName = ushioConstants.GameAbbreviations.Where(g => g.Name == game)
+                                                            .Select(game => game.Name)
+                                                            .FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(fullGameName))
             {
-                fullGameName = abbreviations.List.Where(g => g.Aliases.Contains(game)).Select(game => game.Name).FirstOrDefault();
+                fullGameName = ushioConstants.GameAbbreviations.Where(g => g.Aliases.Contains(game))
+                                                                .Select(game => game.Name)
+                                                                .FirstOrDefault();
             }
 
             return fullGameName;

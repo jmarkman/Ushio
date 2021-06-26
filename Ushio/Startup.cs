@@ -66,7 +66,9 @@ namespace Ushio
 
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<PokemonApiService>();
+            services.AddSingleton(new UshioConstants().InitializeGameAbbreviations());
             services.AddSingleton(new WeatherApiService(_config["ApiKeys:OpenWeatherMap"]));
+            services.AddSingleton(new YouTubeApiService(_config["ApiKeys:YouTube"], new UshioConstants().InitializeVodChannelInfo()));
             services.AddSingleton<VideoClipRepository>();
             services.AddSingleton<FortuneGenerator>();
             services.AddDbContext<UshioDbContext>(options => options.UseNpgsql(_config["ConnectionStrings:Database"]));
