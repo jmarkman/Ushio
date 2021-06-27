@@ -11,10 +11,7 @@ namespace Ushio.Data.YouTube
         public string Title { get; set; }
         public string Id { get; set; }
 
-        public YouTubeVideo()
-        {
-
-        }
+        public YouTubeVideo() { }
 
         public string GetVideoUrl()
         {

@@ -1,6 +1,14 @@
 [
   {
     "name": "3rd STRIKE",
-    "channelId": "UUcpPdn-PzGeQodVc8STGtwA"    
+    "game": "Street Fighter 3",
+    "channelId": "UUcpPdn-PzGeQodVc8STGtwA",
+    "channelUrl": "https://www.youtube.com/channel/UCcpPdn-PzGeQodVc8STGtwA"
+  },
+  {
+    "name": "Kakuto gemu-mura (Fighting Game Village)",
+    "game": "Guilty Gear Strive",
+    "channelId": "UUMSWrtLpEP6u7ikNcOQc41A",
+    "channelUrl": "https://www.youtube.com/channel/UCMSWrtLpEP6u7ikNcOQc41A/"
   }
 ]

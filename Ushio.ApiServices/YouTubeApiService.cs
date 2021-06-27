@@ -1,6 +1,7 @@
 ﻿using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -24,20 +25,34 @@ namespace Ushio.ApiServices
 
         public async Task<YouTubeVideo> GetRandomThirdStrikeClip()
         {
+            List<YouTubeVideo> thirdStrikeClips = new List<YouTubeVideo>();
             var clipRegex = new Regex(@"clip[0-9]{1,4}", RegexOptions.IgnoreCase);
-            var videoRequest = _ytService.PlaylistItems.List("snippet");
-            videoRequest.PlaylistId = _ushioConstants.VodChannels.FirstOrDefault().Id;
-            videoRequest.MaxResults = 50;
+            var thirdStrikeChannelId = _ushioConstants.VodChannels.Where(x => x.Name.ToLower() == "3rd strike").Select(y => y.Id).FirstOrDefault();
+            var nextPageToken = string.Empty;
 
-            var videoResponse = await videoRequest.ExecuteAsync();
-            var videos = videoResponse.Items;
-            var thirdStrikeClips = videos.Where(x => clipRegex.IsMatch(x.Snippet.Title))
+            while (nextPageToken != null)
+            {
+                var videoRequest = _ytService.PlaylistItems.List("snippet");
+                videoRequest.PlaylistId = thirdStrikeChannelId;
+                videoRequest.PageToken = nextPageToken;
+                videoRequest.MaxResults = 50;
+
+                var videoResponse = await videoRequest.ExecuteAsync();
+
+                var currVideos = videoResponse.Items;
+                var clips = currVideos.Where(x => clipRegex.IsMatch(x.Snippet.Title))
                                          .Select(y => new YouTubeVideo
                                          {
                                              Title = y.Snippet.Title,
                                              Id = y.Snippet.ResourceId.VideoId
                                          })
                                          .ToList();
+
+                thirdStrikeClips.AddRange(clips);
+
+                nextPageToken = videoResponse.NextPageToken;
+            }
+
 
             var random = new Random();
 
