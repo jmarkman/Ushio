@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="discord.net" Version="2.2.0" />
+    <PackageReference Include="discord.net" Version="2.4.0" />
     <PackageReference Include="microsoft.extensions.configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="microsoft.extensions.dependencyinjection" Version="5.0.1" />

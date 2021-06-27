@@ -1,12 +1,10 @@
 ﻿using Discord.Commands;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
-using Ushio.Commands.NamedArgs;
 using Ushio.Core;
+using Ushio.Data.NamedArgs;
 using Ushio.Data.YouTube;
 
 namespace Ushio.Commands
@@ -29,16 +27,15 @@ namespace Ushio.Commands
         /// <param name="game">The game to look up</param>
         /// <param name="filter">An object containing named parameters for the command</param>
         [Command("vod")]
-        public async Task GetVod(string game, VodFilter filter = null)
+        public async Task GetVod(string game, VodFilter filter)
         {
-            var fullGameName = GetFullGameName(game);
-            var searchTerm = (filter.Character != null) ? filter.Character : filter.Player;
+            var fullGameName = GetFullGameName(game);                
             YouTubeVideo vod = null;
 
             switch (fullGameName.ToLower())
             {
                 case "guilty gear strive":
-                    vod = await youtubeApiSvc.GetGuiltyGearStriveVod(searchTerm);
+                    vod = await youtubeApiSvc.GetGuiltyGearStriveVod(filter);
                     break;
                 default:
                     break;

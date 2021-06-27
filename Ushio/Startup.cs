@@ -18,7 +18,7 @@ namespace Ushio
 {
     public class Startup
     {
-        private IConfigurationRoot _config;
+        private readonly IConfigurationRoot _config;
 
         public Startup(string[] args)
         {

@@ -40,7 +40,7 @@ namespace Ushio.Infrastructure.Database.Repositories
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await dbContext.Set<T>().ToListAsync();
+            return await dbContext.Set<T>().AsQueryable().ToListAsync();
         }
 
         public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression)

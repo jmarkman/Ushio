@@ -77,7 +77,7 @@ namespace Ushio.Commands
                 return;
             }
 
-            VideoClip newClip = new VideoClip()
+            VideoClip newClip = new()
             {
                 Title = title,
                 Link = link,
