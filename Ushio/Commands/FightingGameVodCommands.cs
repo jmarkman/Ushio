@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Ushio.ApiServices;
 using Ushio.Commands.NamedArgs;
 using Ushio.Core;
+using Ushio.Data.YouTube;
 
 namespace Ushio.Commands
 {
@@ -31,8 +32,19 @@ namespace Ushio.Commands
         public async Task GetVod(string game, VodFilter filter = null)
         {
             var fullGameName = GetFullGameName(game);
+            var searchTerm = (filter.Character != null) ? filter.Character : filter.Player;
+            YouTubeVideo vod = null;
 
-            await ReplyAsync("Not Implemented");
+            switch (fullGameName.ToLower())
+            {
+                case "guilty gear strive":
+                    vod = await youtubeApiSvc.GetGuiltyGearStriveVod(searchTerm);
+                    break;
+                default:
+                    break;
+            }
+
+            await ReplyAsync(vod.GetVideoUrl());
         }
 
         /// <summary>

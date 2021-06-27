@@ -23,6 +23,40 @@ namespace Ushio.ApiServices
             _ushioConstants = ushioConstants;
         }
 
+        public async Task<YouTubeVideo> GetGuiltyGearStriveVod(string searchTerm)
+        {
+            List<YouTubeVideo> striveVods = new List<YouTubeVideo>();
+            var striveChannelId = _ushioConstants.VodChannels.Where(x => x.Name.ToLower().Contains("village")).Select(y => y.Id).FirstOrDefault();
+            var nextPageToken = "";
+
+            while (nextPageToken != null)
+            {
+                var videoRequest = _ytService.PlaylistItems.List("snippet");
+                videoRequest.PlaylistId = striveChannelId;
+                videoRequest.PageToken = nextPageToken;
+                videoRequest.MaxResults = 50;
+
+                var videoResponse = await videoRequest.ExecuteAsync();
+
+                var currVideos = videoResponse.Items;
+                var vods = currVideos.Where(x => x.Snippet.Title.Contains(searchTerm) && x.Snippet.Title.ToLower().Contains("strive"))
+                                    .Select(y => new YouTubeVideo
+                                    {
+                                        Title = y.Snippet.Title,
+                                        Id = y.Snippet.ResourceId.VideoId
+                                    })
+                                    .ToList();
+
+                striveVods.AddRange(vods);
+
+                nextPageToken = videoResponse.NextPageToken;
+            }
+
+            var random = new Random();
+
+            return striveVods[random.Next(striveVods.Count)];
+        }
+
         public async Task<YouTubeVideo> GetRandomThirdStrikeClip()
         {
             List<YouTubeVideo> thirdStrikeClips = new List<YouTubeVideo>();
