@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
 using Ushio.Core;
+using Ushio.Data;
 using Ushio.Data.NamedArgs;
 using Ushio.Data.YouTube;
 
@@ -29,16 +30,35 @@ namespace Ushio.Commands
         [Command("vod")]
         public async Task GetVod(string game, VodFilter filter)
         {
-            var fullGameName = GetFullGameName(game);                
+            var searchTerms = new VodSearchTerms { Character = filter.Character, Player = filter.Player };
             YouTubeVideo vod = null;
-
-            switch (fullGameName.ToLower())
+            
+            try
             {
-                case "guilty gear strive":
-                    vod = await youtubeApiSvc.GetGuiltyGearStriveVod(filter);
-                    break;
-                default:
-                    break;
+                FightingGameName gameName = GetFullGameName(game);
+
+                switch (gameName)
+                {
+                    case FightingGameName.StreetFighter3:
+                        break;
+                    case FightingGameName.StreetFighter4:
+                        break;
+                    case FightingGameName.StreetFighter5:
+                        break;
+                    case FightingGameName.GuiltyGearXXACPlusR:
+                        break;
+                    case FightingGameName.GuiltyGearXrd:
+                        break;
+                    case FightingGameName.GuiltyGearStrive:
+                        vod = await youtubeApiSvc.GetGuiltyGearStriveVod(searchTerms);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (InvalidOperationException invalidOpEx)
+            {
+                await ReplyAsync(invalidOpEx.Message);
             }
 
             await ReplyAsync(vod.GetVideoUrl());
@@ -61,28 +81,41 @@ namespace Ushio.Commands
             }
         }
 
+
         /// <summary>
-        /// Retrieves the full name of the game to source vods for from an abbreviation
-        /// or shorthand way for referring to the game (i.e., sf5 for Street Fighter 5)
+        /// Retrieves the enum associated with the provided full game name, shorthand,
+        /// or abbreviation of the game name
         /// </summary>
         /// <param name="game">The abbreviated or shorthand name for the game</param>
         /// <returns>The full name of the game as a string</returns>
-        private string GetFullGameName(string game)
+        private FightingGameName GetFullGameName(string game)
         {
-            var fullGameName = string.Empty;
+            var gameNameEnumString = string.Empty;
 
-            fullGameName = ushioConstants.GameAbbreviations.Where(g => g.Name == game)
-                                                            .Select(game => game.Name)
+            gameNameEnumString = ushioConstants.GameAbbreviations.Where(g => g.Name == game)
+                                                            .Select(game => game.GetEnumFromName())
                                                             .FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(fullGameName))
+            if (string.IsNullOrWhiteSpace(gameNameEnumString))
             {
-                fullGameName = ushioConstants.GameAbbreviations.Where(g => g.Aliases.Contains(game))
-                                                                .Select(game => game.Name)
+                gameNameEnumString = ushioConstants.GameAbbreviations.Where(g => g.Aliases.Contains(game))
+                                                                .Select(game => game.GetEnumFromName())
                                                                 .FirstOrDefault();
             }
 
-            return fullGameName;
+            return ParseGameNameEnumFromInput(gameNameEnumString);
+
+            FightingGameName ParseGameNameEnumFromInput(string game)
+            {
+                try
+                {
+                    return Enum.Parse<FightingGameName>(game);
+                }
+                catch (ArgumentException)
+                {
+                    throw new InvalidOperationException($"Failed to find a suitable enum for the game '{game}'.");
+                }
+            }
         }
     }
 }

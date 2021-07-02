@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Ushio.Core;
-using Ushio.Data.NamedArgs;
+using Ushio.Data;
 using Ushio.Data.YouTube;
 
 namespace Ushio.ApiServices
@@ -16,19 +16,29 @@ namespace Ushio.ApiServices
         private readonly string _apiKey;
         private readonly YouTubeService _ytService;
         private readonly UshioConstants _ushioConstants;
+        private readonly Random _rnd;
 
         public YouTubeApiService(string key, UshioConstants ushioConstants)
         {
             _apiKey = key;
             _ytService = CreateYouTubeApiService();
             _ushioConstants = ushioConstants;
+            _rnd = new Random();
         }
 
-        public async Task<YouTubeVideo> GetGuiltyGearStriveVod(VodFilter searchTerms)
+        /// <summary>
+        /// Given an object containing search terms, retrieves a Guilty Gear Strive 
+        /// vod from a randomly selected Strive channel
+        /// </summary>
+        /// <param name="searchTerms">A DTO containing search terms</param>
+        /// <returns>The <see cref="YouTubeVideo"/> object for the (psuedo)randomly chosen vod</returns>
+        public async Task<YouTubeVideo> GetGuiltyGearStriveVod(VodSearchTerms searchTerms)
         {
             List<YouTubeVideo> striveVods = new();
-            var random = new Random();
             Regex vodRegex;
+
+            var striveChannels = _ushioConstants.VodChannels.Where(x => x.Game.ToLower() == "guilty gear strive").Select(y => y.Id).ToList();
+            var channel = striveChannels[_rnd.Next(striveChannels.Count)];
 
             if (searchTerms.Character != null && searchTerms.Player ==  null)
             {
@@ -43,23 +53,25 @@ namespace Ushio.ApiServices
                 vodRegex = new Regex($@"{searchTerms.Player}\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
             }
 
-            var striveChannelId = _ushioConstants.VodChannels.Where(x => x.Name.ToLower().Contains("village")).Select(y => y.Id).FirstOrDefault();
+            await PopulateVideoCollection(striveVods, channel, vodRegex);
 
-            await PopulateVideoCollection(striveVods, striveChannelId, vodRegex);
-
-            return striveVods[random.Next(striveVods.Count)];
+            return striveVods[_rnd.Next(striveVods.Count)];
         }
 
+        /// <summary>
+        /// Retrieves a random Third Strike clip from the 3rd STRIKE channel on YouTube. These clips are in the
+        /// format "clip####", sometimes with a space and additional text after the number.
+        /// </summary>
+        /// <returns>The <see cref="YouTubeVideo"/> object for the (psuedo)randomly chosen clip</returns>
         public async Task<YouTubeVideo> GetRandomThirdStrikeClip()
         {
             List<YouTubeVideo> thirdStrikeClips = new();
-            var random = new Random();
             var clipRegex = new Regex(@"clip[0-9]{1,4}", RegexOptions.IgnoreCase);
             var thirdStrikeChannelId = _ushioConstants.VodChannels.Where(x => x.Name.ToLower() == "3rd strike").Select(y => y.Id).FirstOrDefault();
             
             await PopulateVideoCollection(thirdStrikeClips, thirdStrikeChannelId, clipRegex);
 
-            return thirdStrikeClips[random.Next(thirdStrikeClips.Count)];
+            return thirdStrikeClips[_rnd.Next(thirdStrikeClips.Count)];
         }
 
         /// <summary>
@@ -101,6 +113,10 @@ namespace Ushio.ApiServices
             }
         }
 
+        /// <summary>
+        /// Constructs the YouTube API service for querying playlists and channels
+        /// </summary>
+        /// <returns><see cref="YouTubeService"/></returns>
         private YouTubeService CreateYouTubeApiService()
         {
             var ytSvc = new YouTubeService(new BaseClientService.Initializer()

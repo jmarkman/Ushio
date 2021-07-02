@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Linq;
 
 namespace Ushio.Data
 {
@@ -9,5 +10,14 @@ namespace Ushio.Data
 
         [JsonProperty(PropertyName = "aliases")]
         public string[] Aliases { get; set; }
+
+        public string GetEnumFromName()
+        {
+            return Name switch
+            {
+                "Guilty Gear XX Accent Core +R" => "GuiltyGearXXACPlusR",
+                _ => new string(Name.ToCharArray().Where(c => !char.IsWhiteSpace(c)).ToArray()),
+            };
+        }
     }
 }
