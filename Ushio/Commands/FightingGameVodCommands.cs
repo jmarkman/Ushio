@@ -14,6 +14,7 @@ namespace Ushio.Commands
     {
         private readonly UshioConstants ushioConstants;
         private readonly YouTubeApiService youtubeApiSvc;
+        private readonly string CouldNotFindVod = "A vod could not be found with the provided search terms";
 
         public FightingGameVodCommands(YouTubeApiService ytApiSvc, UshioConstants constants)
         {
@@ -61,7 +62,7 @@ namespace Ushio.Commands
                 await ReplyAsync(invalidOpEx.Message);
             }
 
-            await ReplyAsync(vod.GetVideoUrl());
+            await ReplyAsync((vod != null) ? vod.GetVideoUrl() : CouldNotFindVod);
         }
 
         /// <summary>

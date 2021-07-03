@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ushio.Core\Ushio.Core.csproj" />
     <ProjectReference Include="..\Ushio.Data\Ushio.Data.csproj" />
   </ItemGroup>
 

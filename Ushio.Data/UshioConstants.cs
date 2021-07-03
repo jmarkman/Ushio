@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ushio.Data;
 
-namespace Ushio.Core
+namespace Ushio.Data
 {
     public class UshioConstants
     {

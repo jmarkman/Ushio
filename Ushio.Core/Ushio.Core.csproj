@@ -9,7 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Ushio.ApiServices\Ushio.ApiServices.csproj" />
     <ProjectReference Include="..\Ushio.Data\Ushio.Data.csproj" />
+    <ProjectReference Include="..\Ushio.Infrastructure\Ushio.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

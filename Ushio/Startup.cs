@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
 using Ushio.Core;
+using Ushio.Data;
 using Ushio.Infrastructure.Database;
 using Ushio.Infrastructure.Database.Repositories;
 using Ushio.Services;
