@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ushio.Data.YouTube
 {
@@ -10,6 +6,9 @@ namespace Ushio.Data.YouTube
     {
         public string Title { get; set; }
         public string Id { get; set; }
+        public string SourceChannel { get; set; }
+        public FightingGameName GameName { get; set; }
+        public DateTimeOffset DateUploaded { get; set; }
 
         public YouTubeVideo() { }
 

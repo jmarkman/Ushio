@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
 using Ushio.Data;
+using Ushio.Data.DatabaseModels;
 using Ushio.Data.YouTube;
 using Ushio.Infrastructure.Database.Repositories;
 
@@ -46,35 +48,38 @@ namespace Ushio.Core
 
         private async Task<YouTubeVideo> GetVodFromDatabase(FightingGameName gameName, VodSearchTerms searchTerms)
         {
-            /*
-             * if just char
-             * else if just player
-             * else if both
-             * else return null
-             */ 
+            Expression<Func<FightingGameVod, bool>> filterAsFunc = null;
 
-            if (searchTerms.Character != null && searchTerms.Player == null)
-            {
-                var databaseResults = await _fightingGameVodRepository.FindAsync(vod => vod.CharacterP1 == searchTerms.Character || vod.CharacterP2 == searchTerms.Character);
+            filterAsFunc = GenerateFilterExpression(searchTerms, filterAsFunc);
 
-            }
-            else if (searchTerms.Character == null && searchTerms.Player != null)
-            {
+            var databaseResults = await _fightingGameVodRepository.FindAsync(filterAsFunc) as List<FightingGameVod>;
 
-            }
-            else if (searchTerms.Character != null && searchTerms.Player != null)
-            {
+            var randomSelectedVod = databaseResults[_rnd.Next(databaseResults.Count)];
 
-            }
-            else
+            return new YouTubeVideo { Title = randomSelectedVod.OriginalTitle, Id = randomSelectedVod.VideoId };
+
+            Expression<Func<FightingGameVod, bool>> GenerateFilterExpression(VodSearchTerms searchTerms, Expression<Func<FightingGameVod, bool>> filterAsFunc)
             {
-                return null;
+                if (searchTerms.Character != null && searchTerms.Player == null)
+                {
+                    filterAsFunc = vod => (vod.CharacterP1 == searchTerms.Character || vod.CharacterP2 == searchTerms.Character) && (vod.GameName == gameName);
+                }
+                else if (searchTerms.Character == null && searchTerms.Player != null)
+                {
+                    filterAsFunc = vod => (vod.Player1 == searchTerms.Player || vod.Player2 == searchTerms.Player) && (vod.GameName == gameName);
+                }
+                else if (searchTerms.Character != null && searchTerms.Player != null)
+                {
+                    filterAsFunc = vod => ((vod.CharacterP1 == searchTerms.Character || vod.CharacterP2 == searchTerms.Character) && (vod.Player1 == searchTerms.Player || vod.Player2 == searchTerms.Player)) && (vod.GameName == gameName);
+                }
+
+                return filterAsFunc;
             }
         }
 
         private async Task<YouTubeVideo> GetVodFromYouTubeApi(FightingGameName gameName, VodSearchTerms searchTerms)
         {
-
+            throw new NotImplementedException();
         }
     }
 }

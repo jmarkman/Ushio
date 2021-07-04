@@ -22,6 +22,11 @@ namespace Ushio.Infrastructure.Database.Repositories
             return addedItem.Entity;
         }
 
+        public virtual async Task AddRangeAsync(IEnumerable<T> entityList)
+        {
+            await dbContext.AddRangeAsync(entityList);
+        }
+
         public virtual async Task<T> UpdateAsync(T entity)
         {
             dbContext.Update(entity);

@@ -16,6 +16,7 @@ namespace Ushio.ApiServices
         private readonly YouTubeService _ytService;
         private readonly UshioConstants _ushioConstants;
         private readonly Random _rnd;
+        private const string RightBlackLenticularBracket = "】";
 
         public YouTubeApiService(string key, UshioConstants ushioConstants)
         {
@@ -25,36 +26,17 @@ namespace Ushio.ApiServices
             _rnd = new Random();
         }
 
-        /// <summary>
-        /// Given an object containing search terms, retrieves a Guilty Gear Strive 
-        /// vod from a randomly selected Strive channel
-        /// </summary>
-        /// <param name="searchTerms">A DTO containing search terms</param>
-        /// <returns>The <see cref="YouTubeVideo"/> object for the (psuedo)randomly chosen vod</returns>
-        public async Task<YouTubeVideo> GetGuiltyGearStriveVod(VodSearchTerms searchTerms)
+        public async Task<List<YouTubeVideo>> GetSpecifiedVodsAsync(FightingGameName gameName, VodSearchTerms searchTerms)
         {
-            List<YouTubeVideo> striveVods = new();
-            Regex vodRegex;
+            List<YouTubeVideo> vods = new();
+            var vodChannelsForSpecifiedGame = _ushioConstants.VodChannels.Where(ch => Enum.Parse<FightingGameName>(ch.GetEnumFromGame()) == gameName).ToList();
+            var channel = vodChannelsForSpecifiedGame[_rnd.Next(vodChannelsForSpecifiedGame.Count)];
 
-            var striveChannels = _ushioConstants.VodChannels.Where(x => x.Game.ToLower() == "guilty gear strive").Select(y => y.Id).ToList();
-            var channel = striveChannels[_rnd.Next(striveChannels.Count)];
+            Regex vodRegex = GenerateSearchRegexForChannel(channel.Name, searchTerms);
 
-            if (searchTerms.Character != null && searchTerms.Player ==  null)
-            {
-                vodRegex = new Regex($@"\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
-            }
-            else if (searchTerms.Character == null && searchTerms.Player != null)
-            {
-                vodRegex = new Regex($@"{searchTerms.Player}", RegexOptions.IgnoreCase);
-            }
-            else
-            {
-                vodRegex = new Regex($@"{searchTerms.Player}\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
-            }
+            await PopulateVideoCollectionAsync(vods, vodRegex, gameName, channel.Id, channel.Name);
 
-            await PopulateVideoCollection(striveVods, channel, vodRegex);
-
-            return striveVods[_rnd.Next(striveVods.Count)];
+            return vods;
         }
 
         /// <summary>
@@ -68,9 +50,20 @@ namespace Ushio.ApiServices
             var clipRegex = new Regex(@"clip[0-9]{1,4}", RegexOptions.IgnoreCase);
             var thirdStrikeChannelId = _ushioConstants.VodChannels.Where(x => x.Name.ToLower() == "3rd strike").Select(y => y.Id).FirstOrDefault();
             
-            await PopulateVideoCollection(thirdStrikeClips, thirdStrikeChannelId, clipRegex);
+            //await PopulateVideoCollectionAsync(thirdStrikeClips, thirdStrikeChannelId, clipRegex);
 
             return thirdStrikeClips[_rnd.Next(thirdStrikeClips.Count)];
+        }
+
+        private async Task<List<YouTubePlaylist>> GetPlaylistsForChannelAsync(string channelId)
+        {
+            var playlistRequest = _ytService.Playlists.List("snippet");
+            playlistRequest.ChannelId = channelId;
+            playlistRequest.MaxResults = 50;
+
+            var playlistResponse = await playlistRequest.ExecuteAsync();
+
+            return playlistResponse.Items.Select(x => new YouTubePlaylist { Title = x.Snippet.Title, Id = x.Id }).ToList();
         }
 
         /// <summary>
@@ -80,16 +73,17 @@ namespace Ushio.ApiServices
         /// playlist for that user's channel, so YouTube recognizes everything as a playlist.
         /// This is why the parameter name for the playlist ID can be either a channel ID
         /// or a playlist ID.</remarks>
-        /// <param name="clipCollection">The <see cref="List{YouTubeVideo}"/> holding the videos</param>
+        /// <param name="vodCollection">The <see cref="List{YouTubeVideo}"/> holding the videos</param>
         /// <param name="playlistId">The playlist to retrieve videos from</param>
-        /// <param name="clipRegex">Regex filter</param>
-        private async Task PopulateVideoCollection(List<YouTubeVideo> clipCollection, string playlistId, Regex clipRegex)
+        /// <param name="channelName">The channel name associated with the video</param>
+        /// <param name="vodRegex">Regex filter</param>
+        private async Task PopulateVideoCollectionAsync(List<YouTubeVideo> vodCollection, Regex vodRegex, FightingGameName gameName, string playlistId, string channelName)
         {
             var nextPageToken = string.Empty;
 
             while (nextPageToken != null)
             {
-                var videoRequest = _ytService.PlaylistItems.List("snippet");
+                var videoRequest = _ytService.PlaylistItems.List("snippet,contentDetails");
                 videoRequest.PlaylistId = playlistId;
                 videoRequest.PageToken = nextPageToken;
                 videoRequest.MaxResults = 50;
@@ -98,19 +92,61 @@ namespace Ushio.ApiServices
 
                 var currVideos = videoResponse.Items;
 
-                var clips = currVideos.Where(x => clipRegex.IsMatch(x.Snippet.Title))
+                var clips = currVideos.Where(x => vodRegex.IsMatch(x.Snippet.Title))
                                          .Select(y => new YouTubeVideo
                                          {
                                              Title = y.Snippet.Title,
-                                             Id = y.Snippet.ResourceId.VideoId
+                                             Id = y.Snippet.ResourceId.VideoId,
+                                             SourceChannel = channelName,
+                                             GameName = gameName,
+                                             DateUploaded = new DateTimeOffset(y.ContentDetails.VideoPublishedAt.Value)
                                          })
                                          .ToList();
 
-                clipCollection.AddRange(clips);
+                vodCollection.AddRange(clips);
 
                 nextPageToken = videoResponse.NextPageToken;
             }
         }
+
+        private Regex GenerateSearchRegexForChannel(string channelName, VodSearchTerms searchTerms)
+        {
+            Regex rgx = null;
+
+            if (channelName.Contains("Kakuto") || channelName.ToLower() == "gamestorage ch")
+            {
+                if (searchTerms.Character != null && searchTerms.Player == null)
+                {
+                    rgx = new Regex($@"\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
+                }
+                else if (searchTerms.Character == null && searchTerms.Player != null)
+                {
+                    rgx = new Regex($@"{searchTerms.Player}", RegexOptions.IgnoreCase);
+                }
+                else
+                {
+                    rgx = new Regex($@"{searchTerms.Player}\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
+                }
+            }
+            else if (channelName.ToLower() == "guilty gear strive movies")
+            {
+                if (searchTerms.Character != null && searchTerms.Player == null)
+                {
+                    rgx = new Regex($@"\/{searchTerms.Character}", RegexOptions.IgnoreCase);
+                }
+                else if (searchTerms.Character == null && searchTerms.Player != null)
+                {
+                    rgx = new Regex($@"{searchTerms.Player}", RegexOptions.IgnoreCase);
+                }
+                else
+                {
+                    rgx = new Regex($@"{searchTerms.Player}.*?\b(?<=\/{searchTerms.Character}\b", RegexOptions.IgnoreCase);
+                }
+            }
+
+            return rgx;
+        }
+
 
         /// <summary>
         /// Constructs the YouTube API service for querying playlists and channels

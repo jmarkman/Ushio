@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
-using Ushio.Core;
 using Ushio.Data;
 using Ushio.Data.NamedArgs;
 using Ushio.Data.YouTube;
@@ -51,7 +50,6 @@ namespace Ushio.Commands
                     case FightingGameName.GuiltyGearXrd:
                         break;
                     case FightingGameName.GuiltyGearStrive:
-                        vod = await youtubeApiSvc.GetGuiltyGearStriveVod(searchTerms);
                         break;
                     default:
                         break;
