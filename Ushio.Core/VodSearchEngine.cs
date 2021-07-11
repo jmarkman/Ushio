@@ -113,7 +113,7 @@ namespace Ushio.Core
                 vodsToStoreInDatabase.Add(fgVod);
             }
 
-            _ = await _fightingGameVodRepository.AddRangeAsync(vodsToStoreInDatabase);
+            await _fightingGameVodRepository.AddRangeAsync(vodsToStoreInDatabase);
 
             return vods[_rnd.Next(vods.Count)];
         }
