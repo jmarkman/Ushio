@@ -10,12 +10,21 @@ using Ushio.Data.YouTube;
 
 namespace Ushio.ApiServices
 {
+    /// <summary>
+    /// This API service allows for interacting with the YouTube API.
+    /// Currently focuses on combing fighting game channels for vods.
+    /// </summary>
     public class YouTubeApiService
     {
         private readonly string _apiKey;
         private readonly YouTubeService _ytService;
         private readonly UshioConstants _ushioConstants;
         private readonly Random _rnd;
+        /// <summary>
+        /// Represents a 'lenticular bracket' that is used by Asian character
+        /// sets in place of the western bracket.
+        /// TODO: See if I need this here or in the VodSearchEngine class.
+        /// </summary>
         private const string RightBlackLenticularBracket = "】";
 
         public YouTubeApiService(string key, UshioConstants ushioConstants)
@@ -26,6 +35,13 @@ namespace Ushio.ApiServices
             _rnd = new Random();
         }
 
+        /// <summary>
+        /// Retrieves a list of vods from a randomly chosen vod channel based on the provided game and
+        /// search terms
+        /// </summary>
+        /// <param name="gameName">An enum representing the desired game</param>
+        /// <param name="searchTerms">A POCO that will hold either a character name, player name, or both</param>
+        /// <returns>A list of <see cref="YouTubeVideo"/> objects representing vods, filtered by the <see cref="VodSearchTerms"/> object</returns>
         public async Task<List<YouTubeVideo>> GetSpecifiedVodsAsync(FightingGameName gameName, VodSearchTerms searchTerms)
         {
             List<YouTubeVideo> vods = new();
@@ -55,6 +71,12 @@ namespace Ushio.ApiServices
             return thirdStrikeClips[_rnd.Next(thirdStrikeClips.Count)];
         }
 
+        /// <summary>
+        /// For usage later in development. Gets all of the playlists for a given channel, used for
+        /// vod channels that organize vods by primary character.
+        /// </summary>
+        /// <param name="channelId">The unique Id for the vod channel</param>
+        /// <returns>A list of <see cref="YouTubePlaylist"/> objects representing the playlists made for the channel</returns>
         private async Task<List<YouTubePlaylist>> GetPlaylistsForChannelAsync(string channelId)
         {
             var playlistRequest = _ytService.Playlists.List("snippet");
@@ -109,6 +131,13 @@ namespace Ushio.ApiServices
             }
         }
 
+        /// <summary>
+        /// Based on the channel name and search terms, constructs a regex to use when filtering
+        /// vods by title.
+        /// </summary>
+        /// <param name="channelName">The name of the channel that will be combed for vods</param>
+        /// <param name="searchTerms">The vod filtering POCO</param>
+        /// <returns>A regex that works for the current channel's naming scheme for vod titles</returns>
         private Regex GenerateSearchRegexForChannel(string channelName, VodSearchTerms searchTerms)
         {
             Regex rgx = null;
@@ -140,13 +169,12 @@ namespace Ushio.ApiServices
                 }
                 else
                 {
-                    rgx = new Regex($@"{searchTerms.Player}.*?\b(?<=\/{searchTerms.Character}\b", RegexOptions.IgnoreCase);
+                    rgx = new Regex($@"{searchTerms.Player}.*?\b(?<=\/){searchTerms.Character}\b", RegexOptions.IgnoreCase);
                 }
             }
 
             return rgx;
         }
-
 
         /// <summary>
         /// Constructs the YouTube API service for querying playlists and channels

@@ -12,7 +12,7 @@ namespace Ushio.Data.DatabaseModels
         public string OriginalTitle { get; set; }
         public string VideoId { get; set; }
         public FightingGameName GameName { get; set; }
-        public string Source { get; set; }
+        public string SourceChannel { get; set; }
         public string Player1 { get; set; }
         public string Player2 { get; set; }
         public string CharacterP1 { get; set; }
