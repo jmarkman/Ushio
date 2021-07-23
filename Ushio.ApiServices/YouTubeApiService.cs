@@ -20,12 +20,6 @@ namespace Ushio.ApiServices
         private readonly YouTubeService _ytService;
         private readonly UshioConstants _ushioConstants;
         private readonly Random _rnd;
-        /// <summary>
-        /// Represents a 'lenticular bracket' that is used by Asian character
-        /// sets in place of the western bracket.
-        /// TODO: See if I need this here or in the VodSearchEngine class.
-        /// </summary>
-        private const string RightBlackLenticularBracket = "】";
 
         public YouTubeApiService(string key, UshioConstants ushioConstants)
         {

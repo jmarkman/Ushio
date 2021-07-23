@@ -21,6 +21,7 @@ namespace Ushio.Core
     /// </summary>
     public class VodSearchEngine
     {
+        private const char RightBlackLenticularBracket = '】';
         private const char LeftBlackLenticularBracket = '【';
         private readonly YouTubeApiService _youTubeApiService;
         private readonly UshioConstants _ushioConstants;
@@ -63,7 +64,7 @@ namespace Ushio.Core
         /// <returns>A singular <see cref="YouTubeVideo"/> randomly chosen from the search results</returns>
         private async Task<YouTubeVideo> GetVodFromDatabase(FightingGameName gameName, VodSearchTerms searchTerms)
         {
-            Expression<Func<FightingGameVod, bool>> filterAsFunc = null;
+            Expression<Func<FightingGameVod, bool>> filterAsFunc = (vod) => false;
 
             filterAsFunc = GenerateFilterExpression(searchTerms, filterAsFunc);
 
@@ -135,7 +136,7 @@ namespace Ushio.Core
                 Player1 = ParsePlayerFromVideoTitle(ytVideo),
                 Player2 = ParsePlayerFromVideoTitle(ytVideo, parsePlayer2: true),
                 CharacterP1 = ParseCharacterFromVideoTitle(ytVideo),
-                CharacterP2 = ParseCharacterFromVideoTitle(ytVideo, parsePlayerChar2: true),
+                CharacterP2 = ParseCharacterFromVideoTitle(ytVideo, parsePlayer2Char: true),
                 DateUploaded = ytVideo.DateUploaded,
                 DateAddedToRepo = DateTimeOffset.Now
             };
@@ -184,36 +185,31 @@ namespace Ushio.Core
             }
             else if (ytVideo.SourceChannel.Contains("Kakuto"))
             {
-                int commaIdx = ytVideo.Title.LastIndexOf(',');
-                int pointer = commaIdx;
                 string playerAndCharacter;
 
                 if (parsePlayer2)
                 {
-                    while (true)
-                    {
-                        ++pointer;
-                        if (pointer > ytVideo.Title.Length || ytVideo.Title[pointer] == LeftBlackLenticularBracket)
-                        {
-                            pointer--;
-                            break;
-                        }
-                    }
-
-                    playerAndCharacter = ytVideo.Title.AsSpan(commaIdx + 1, pointer - commaIdx).ToString().Trim();
+                    playerAndCharacter = FightingGameVillageTitleParser(ytVideo.Title, parsePlayer2);
                 }
                 else
                 {
-                    while (true)
-                    {
-                        --pointer;
-                        if (pointer < 0 || ytVideo.Title[pointer] == ' ')
-                        {
-                            break;
-                        }
-                    }
+                    playerAndCharacter = FightingGameVillageTitleParser(ytVideo.Title);
+                }
 
-                    playerAndCharacter = ytVideo.Title.AsSpan(pointer, commaIdx - pointer).ToString().Trim();
+                var openingParenthesisIdx = playerAndCharacter.IndexOf('(');
+                playerName = playerAndCharacter.Substring(0, openingParenthesisIdx);
+            }
+            else if (ytVideo.SourceChannel.ToLower() == "gamestorage ch")
+            {
+                string playerAndCharacter;
+
+                if (parsePlayer2)
+                {
+                    playerAndCharacter = GamestorageChTitleParser(ytVideo.Title, parsePlayer2);
+                }
+                else
+                {
+                    playerAndCharacter = GamestorageChTitleParser(ytVideo.Title);
                 }
 
                 var openingParenthesisIdx = playerAndCharacter.IndexOf('(');
@@ -223,18 +219,18 @@ namespace Ushio.Core
             return playerName;
         }
 
-        private string ParseCharacterFromVideoTitle(YouTubeVideo ytVideo, bool parsePlayerChar2 = false)
+        private string ParseCharacterFromVideoTitle(YouTubeVideo ytVideo, bool parsePlayer2Char = false)
         {
             var characterName = string.Empty;
 
             if (ytVideo.SourceChannel.ToLower() == "guilty gear strive movies")
             {
-                Regex ggsmCharacterRegex = new Regex(@"(?<=\s)\((.+) vs (.+)\)");
+                Regex ggsmCharacterRegex = new(@"(?<=\s)\((.+) vs (.+)\)");
                 var charNameMatch = ggsmCharacterRegex.Match(ytVideo.Title);
 
                 if (charNameMatch.Success)
                 {
-                    if (parsePlayerChar2)
+                    if (parsePlayer2Char)
                     {
                         characterName = charNameMatch.Groups[2].Value;
                     }
@@ -244,8 +240,133 @@ namespace Ushio.Core
                     }
                 }
             }
+            else if (ytVideo.SourceChannel.Contains("Kakuto"))
+            {
+                string playerAndCharacter;
+
+                if (parsePlayer2Char)
+                {
+                    playerAndCharacter = FightingGameVillageTitleParser(ytVideo.Title, parsePlayer2Char);
+                }
+                else
+                {
+                    playerAndCharacter = FightingGameVillageTitleParser(ytVideo.Title);
+                }
+
+                // Add 1 to the index since we want to start the substring after the opening parenthesis
+                var openParenthesisIndex = playerAndCharacter.IndexOf('(') + 1;
+                characterName = playerAndCharacter[openParenthesisIndex..].Replace(")", string.Empty);
+            }
+            else if (ytVideo.SourceChannel.ToLower() == "gamestorage ch")
+            {
+                string playerAndCharacter;
+
+                if (parsePlayer2Char)
+                {
+                    playerAndCharacter = GamestorageChTitleParser(ytVideo.Title, parsePlayer2Char);
+                }
+                else
+                {
+                    playerAndCharacter = GamestorageChTitleParser(ytVideo.Title);
+                }
+
+                // Add 1 to the index since we want to start the substring after the opening parenthesis
+                var openParenthesisIndex = playerAndCharacter.IndexOf('(') + 1;
+                characterName = playerAndCharacter[openParenthesisIndex..].Replace(")", string.Empty);
+            }
 
             return characterName;
+        }
+
+        /// <summary>
+        /// Given a video title from Fighting Game Village's channel, get the character and the player
+        /// from the title
+        /// </summary>
+        /// <param name="title">The title of the YouTube video</param>
+        /// <param name="getPlayer2">If true, will get the information for player 2. Default is false (player 1)</param>
+        /// <returns>The desired player and their character from the title as a string</returns>
+        private string FightingGameVillageTitleParser(string title, bool getPlayer2 = false)
+        {
+            int commaIdx = title.LastIndexOf(',');
+            int pointer = commaIdx;
+            string data;
+
+            if (getPlayer2)
+            {
+                // We need to move forward from the comma
+                pointer = ParsePlayer2ContentFromTitle(title, pointer);
+
+                data = title.AsSpan(commaIdx + 1, pointer - commaIdx).ToString().Trim();
+            }
+            else
+            {
+                // We need to move backwards from the comma
+                pointer = ParsePlayer1ContentFromTitle(title, pointer);
+
+                data = title.AsSpan(pointer, commaIdx - pointer).ToString().Trim();
+            }
+
+            return data;
+
+            int ParsePlayer1ContentFromTitle(string title, int pointer)
+            {
+                while (true)
+                {
+                    --pointer;
+                    if (pointer < 0 || title[pointer] == ' ')
+                    {
+                        break;
+                    }
+                }
+
+                return pointer;
+            }
+
+            int ParsePlayer2ContentFromTitle(string title, int pointer)
+            {
+                while (true)
+                {
+                    ++pointer;
+                    if (pointer > title.Length || title[pointer] == LeftBlackLenticularBracket)
+                    {
+                        pointer--;
+                        break;
+                    }
+                }
+
+                return pointer;
+            }
+        }
+
+        /// <summary>
+        /// Given a video title from Gamestorage Ch, get the character and player from the title
+        /// </summary>
+        /// <param name="title">The title of the YouTube video</param>
+        /// <param name="getPlayer2">If true, will get the information for player 2. Default is false (player 1)</param>
+        /// <returns>The desired player and their character from the title as a string</returns>
+        private string GamestorageChTitleParser(string title, bool getPlayer2 = false)
+        {
+            Regex gamestorageTitleRegex = new($@"(?<={RightBlackLenticularBracket})(.*)vs(.*\))");
+            string player1;
+            string player2;
+            var playerTitleSegment = gamestorageTitleRegex.Match(title);
+
+            if (playerTitleSegment.Success)
+            {
+                player1 = playerTitleSegment.Groups[0].Value.Trim();
+                player2 = playerTitleSegment.Groups[1].Value.Trim();
+
+                if (getPlayer2)
+                {
+                    return player2;
+                }
+                else
+                {
+                    return player1;
+                }
+            }
+
+            return string.Empty;
         }
     }
 }
