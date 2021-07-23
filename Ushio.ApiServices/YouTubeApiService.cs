@@ -59,7 +59,7 @@ namespace Ushio.ApiServices
             List<YouTubeVideo> thirdStrikeClips = new();
             var clipRegex = new Regex(@"clip[0-9]{1,4}", RegexOptions.IgnoreCase);
             var thirdStrikeChannelId = _ushioConstants.VodChannels.Where(x => x.Name.ToLower() == "3rd strike").Select(y => y.Id).FirstOrDefault();
-            
+
             //await PopulateVideoCollectionAsync(thirdStrikeClips, thirdStrikeChannelId, clipRegex);
 
             return thirdStrikeClips[_rnd.Next(thirdStrikeClips.Count)];
@@ -136,34 +136,38 @@ namespace Ushio.ApiServices
         {
             Regex rgx = null;
 
-            if (channelName.Contains("Kakuto") || channelName.ToLower() == "gamestorage ch")
+            if (SearchTermsJustHasCharacter(searchTerms))
             {
-                if (searchTerms.Character != null && searchTerms.Player == null)
+                if (channelName.Contains("Kakuto") || channelName.ToLower() == "gamestorage ch")
                 {
                     rgx = new Regex($@"\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
                 }
-                else if (searchTerms.Character == null && searchTerms.Player != null)
+                else if (channelName.ToLower() == "guilty gear strive movies")
                 {
-                    rgx = new Regex($@"{searchTerms.Player}", RegexOptions.IgnoreCase);
+                    rgx = new Regex($@"\/{searchTerms.Character}", RegexOptions.IgnoreCase);
+                }
+                else
+                {
+                    rgx = new Regex($"{searchTerms.Character}", RegexOptions.IgnoreCase);
+                }
+            }
+            else if (SearchTermsJustHasPlayer(searchTerms))
+            {
+                rgx = new Regex($"{searchTerms.Player}", RegexOptions.IgnoreCase);
+            }
+            else
+            {
+                if (channelName.Contains("Kakuto") || channelName.ToLower() == "gamestorage ch")
+                {
+                    rgx = new Regex($@"{searchTerms.Player}\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
+                }
+                else if (channelName.ToLower() == "guilty gear strive movies")
+                {
+                    rgx = new Regex($@"{searchTerms.Player}.*?\b(?<=\/){searchTerms.Character}\b", RegexOptions.IgnoreCase);
                 }
                 else
                 {
                     rgx = new Regex($@"{searchTerms.Player}\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
-                }
-            }
-            else if (channelName.ToLower() == "guilty gear strive movies")
-            {
-                if (searchTerms.Character != null && searchTerms.Player == null)
-                {
-                    rgx = new Regex($@"\/{searchTerms.Character}", RegexOptions.IgnoreCase);
-                }
-                else if (searchTerms.Character == null && searchTerms.Player != null)
-                {
-                    rgx = new Regex($@"{searchTerms.Player}", RegexOptions.IgnoreCase);
-                }
-                else
-                {
-                    rgx = new Regex($@"{searchTerms.Player}.*?\b(?<=\/){searchTerms.Character}\b", RegexOptions.IgnoreCase);
                 }
             }
 
@@ -183,6 +187,30 @@ namespace Ushio.ApiServices
             });
 
             return ytSvc;
+        }
+
+        /// <summary>
+        /// Wrapper for boolean logic to determine if the end user only provided a character
+        /// as a search term
+        /// </summary>
+        /// <param name="searchTerms"></param>
+        /// <returns>True if the <see cref="VodSearchTerms.Character"/> property is not null/empty and
+        /// the <see cref="VodSearchTerms.Player"/> property is null/empty</returns>
+        private bool SearchTermsJustHasCharacter(VodSearchTerms searchTerms)
+        {
+            return !string.IsNullOrWhiteSpace(searchTerms.Character) && string.IsNullOrWhiteSpace(searchTerms.Player);
+        }
+
+        /// <summary>
+        /// Wrapper for boolean logic to determine if the end user only provided a player
+        /// as a search term
+        /// </summary>
+        /// <param name="searchTerms"></param>
+        /// <returns>True if the <see cref="VodSearchTerms.Player"/> property is not null/empty and
+        /// the <see cref="VodSearchTerms.Character"/> property is null/empty</returns>
+        private bool SearchTermsJustHasPlayer(VodSearchTerms searchTerms)
+        {
+            return string.IsNullOrWhiteSpace(searchTerms.Character) && !string.IsNullOrWhiteSpace(searchTerms.Player);
         }
     }
 }
