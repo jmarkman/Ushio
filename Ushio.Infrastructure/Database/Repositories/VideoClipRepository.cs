@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Ushio.Data;
+﻿using Ushio.Data.DatabaseModels;
 
 namespace Ushio.Infrastructure.Database.Repositories
 {

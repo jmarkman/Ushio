@@ -9,11 +9,13 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
-using Ushio.Core;
+using Microsoft.Extensions.Logging;
 using Ushio.Data;
 using Ushio.Infrastructure.Database;
 using Ushio.Infrastructure.Database.Repositories;
 using Ushio.Services;
+using Ushio.Core.Logging;
+using Ushio.Core;
 
 namespace Ushio
 {
@@ -45,8 +47,10 @@ namespace Ushio
             await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), provider);
 
             await provider.GetRequiredService<CommandHandlingService>().StartAsync();
+            provider.GetRequiredService<ILoggerFactory>().AddProvider(new UshioLoggerProvider());
+            provider.GetRequiredService<LoggingService>().Start();
 
-            await Task.Delay(-1);   
+            await Task.Delay(-1);
         }
 
         private void ConfigureServices(ServiceCollection services)
@@ -65,15 +69,18 @@ namespace Ushio
                 DefaultRunMode = RunMode.Async
             }));
 
+            services.AddSingleton(_config);
             services.AddSingleton<CommandHandlingService>();
+            services.AddSingleton<LoggingService>();
+            services.AddLogging();
             services.AddSingleton<PokemonApiService>();
             services.AddSingleton(new UshioConstants().InitializeGameAbbreviations());
             services.AddSingleton(new WeatherApiService(_config["ApiKeys:OpenWeatherMap"]));
             services.AddSingleton(new YouTubeApiService(_config["ApiKeys:YouTube"], new UshioConstants().InitializeVodChannelInfo()));
+            services.AddSingleton<FightingGameVodRepository>();
             services.AddSingleton<VideoClipRepository>();
-            services.AddSingleton<FortuneGenerator>();
             services.AddDbContext<UshioDbContext>(options => options.UseNpgsql(_config["ConnectionStrings:Database"]));
-            services.AddSingleton(_config);
+            services.AddSingleton<FortuneGenerator>();
         }
     }
 }

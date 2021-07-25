@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Ushio.Data;
+using Ushio.Data.DatabaseModels;
 using Ushio.Infrastructure.Database.Repositories;
 
 namespace Ushio.Commands

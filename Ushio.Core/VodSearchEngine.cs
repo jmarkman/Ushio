@@ -24,15 +24,13 @@ namespace Ushio.Core
         private const char RightBlackLenticularBracket = '】';
         private const char LeftBlackLenticularBracket = '【';
         private readonly YouTubeApiService _youTubeApiService;
-        private readonly UshioConstants _ushioConstants;
         private readonly FightingGameVodRepository _fightingGameVodRepository;
         private readonly Random _rnd;
 
-        public VodSearchEngine(FightingGameVodRepository repo, YouTubeApiService apiSvc, UshioConstants constants)
+        public VodSearchEngine(FightingGameVodRepository repo, YouTubeApiService apiSvc)
         {
             _fightingGameVodRepository = repo;
             _youTubeApiService = apiSvc;
-            _ushioConstants = constants;
             _rnd = new Random();
         }
 
@@ -115,6 +113,7 @@ namespace Ushio.Core
             }
 
             await _fightingGameVodRepository.AddRangeAsync(vodsToStoreInDatabase);
+            await _fightingGameVodRepository.SaveChangesAsync();
 
             return vods[_rnd.Next(vods.Count)];
         }
@@ -353,8 +352,8 @@ namespace Ushio.Core
 
             if (playerTitleSegment.Success)
             {
-                player1 = playerTitleSegment.Groups[0].Value.Trim();
-                player2 = playerTitleSegment.Groups[1].Value.Trim();
+                player1 = playerTitleSegment.Groups[1].Value.Trim();
+                player2 = playerTitleSegment.Groups[2].Value.Trim();
 
                 if (getPlayer2)
                 {

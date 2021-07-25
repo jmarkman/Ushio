@@ -3,21 +3,23 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
+using Ushio.Core;
 using Ushio.Data;
 using Ushio.Data.NamedArgs;
 using Ushio.Data.YouTube;
+using Ushio.Infrastructure.Database.Repositories;
 
 namespace Ushio.Commands
 {
     public class FightingGameVodCommands : ModuleBase<SocketCommandContext>
     {
         private readonly UshioConstants ushioConstants;
-        private readonly YouTubeApiService youtubeApiSvc;
+        private readonly VodSearchEngine vodSearchEngine;
         private readonly string CouldNotFindVod = "A vod could not be found with the provided search terms";
 
-        public FightingGameVodCommands(YouTubeApiService ytApiSvc, UshioConstants constants)
+        public FightingGameVodCommands(FightingGameVodRepository fgVodRepo, YouTubeApiService ytApiSvc, UshioConstants constants)
         {
-            youtubeApiSvc = ytApiSvc;
+            vodSearchEngine = new VodSearchEngine(fgVodRepo, ytApiSvc);
             ushioConstants = constants;
         }
 
@@ -32,28 +34,12 @@ namespace Ushio.Commands
         {
             var searchTerms = new VodSearchTerms { Character = filter.Character, Player = filter.Player };
             YouTubeVideo vod = null;
-            
+
             try
             {
                 FightingGameName gameName = GetFullGameName(game);
 
-                switch (gameName)
-                {
-                    case FightingGameName.StreetFighter3:
-                        break;
-                    case FightingGameName.StreetFighter4:
-                        break;
-                    case FightingGameName.StreetFighter5:
-                        break;
-                    case FightingGameName.GuiltyGearXXACPlusR:
-                        break;
-                    case FightingGameName.GuiltyGearXrd:
-                        break;
-                    case FightingGameName.GuiltyGearStrive:
-                        break;
-                    default:
-                        break;
-                }
+                vod = await vodSearchEngine.GetVodFor(gameName, searchTerms, filter.GetNewClips);
             }
             catch (InvalidOperationException invalidOpEx)
             {
@@ -72,12 +58,7 @@ namespace Ushio.Commands
         [Command("3s")]
         public async Task GetThirdStrikeClip(string clipNumber = "")
         {
-            var thirdStrikeClip = await youtubeApiSvc.GetRandomThirdStrikeClip();
-
-            if (thirdStrikeClip != null)
-            {
-                await ReplyAsync(thirdStrikeClip.GetVideoUrl());
-            }
+            await ReplyAsync("Not yet implemented");
         }
 
 

@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Ushio.Data;
+using Ushio.Data.DatabaseModels;
 
 namespace Ushio.Infrastructure.Database
 {
     public class UshioDbContext : DbContext
     {
         public DbSet<VideoClip> VideoClips { get; set; }
+        public DbSet<FightingGameVod> FightingGameVods { get; set; }
 
         public UshioDbContext() : base()
         {
