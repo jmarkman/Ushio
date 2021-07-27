@@ -75,17 +75,17 @@ namespace Ushio.Core
             // Builds the LINQ expression used to comb the database for the desired vod
             Expression<Func<FightingGameVod, bool>> GenerateFilterExpression(VodSearchTerms searchTerms, Expression<Func<FightingGameVod, bool>> filterAsFunc)
             {
-                if (searchTerms.Character != null && searchTerms.Player == null)
+                if (SearchTermsJustHasCharacter(searchTerms))
                 {
-                    filterAsFunc = vod => (vod.CharacterP1 == searchTerms.Character || vod.CharacterP2 == searchTerms.Character) && (vod.GameName == gameName);
+                    filterAsFunc = vod => (vod.CharacterP1.ToLower() == searchTerms.Character.ToLower() || vod.CharacterP2.ToLower() == searchTerms.Character.ToLower()) && (vod.GameName == gameName);
                 }
-                else if (searchTerms.Character == null && searchTerms.Player != null)
+                else if (SearchTermsJustHasPlayer(searchTerms))
                 {
-                    filterAsFunc = vod => (vod.Player1 == searchTerms.Player || vod.Player2 == searchTerms.Player) && (vod.GameName == gameName);
+                    filterAsFunc = vod => (vod.Player1.ToLower() == searchTerms.Player.ToLower() || vod.Player2.ToLower() == searchTerms.Player.ToLower()) && (vod.GameName == gameName);
                 }
-                else if (searchTerms.Character != null && searchTerms.Player != null)
+                else
                 {
-                    filterAsFunc = vod => ((vod.CharacterP1 == searchTerms.Character || vod.CharacterP2 == searchTerms.Character) && (vod.Player1 == searchTerms.Player || vod.Player2 == searchTerms.Player)) && (vod.GameName == gameName);
+                    filterAsFunc = vod => ((vod.CharacterP1.ToLower() == searchTerms.Character.ToLower() || vod.CharacterP2.ToLower() == searchTerms.Character.ToLower()) && (vod.Player1.ToLower() == searchTerms.Player.ToLower() || vod.Player2.ToLower() == searchTerms.Player.ToLower())) && (vod.GameName == gameName);
                 }
 
                 return filterAsFunc;
@@ -141,6 +141,30 @@ namespace Ushio.Core
             };
 
             return fgVod;
+        }
+
+        /// <summary>
+        /// Wrapper for boolean logic to determine if the end user only provided a character
+        /// as a search term
+        /// </summary>
+        /// <param name="searchTerms"></param>
+        /// <returns>True if the <see cref="VodSearchTerms.Character"/> property is not null/empty and
+        /// the <see cref="VodSearchTerms.Player"/> property is null/empty</returns>
+        private bool SearchTermsJustHasCharacter(VodSearchTerms searchTerms)
+        {
+            return !string.IsNullOrWhiteSpace(searchTerms.Character) && string.IsNullOrWhiteSpace(searchTerms.Player);
+        }
+
+        /// <summary>
+        /// Wrapper for boolean logic to determine if the end user only provided a player
+        /// as a search term
+        /// </summary>
+        /// <param name="searchTerms"></param>
+        /// <returns>True if the <see cref="VodSearchTerms.Player"/> property is not null/empty and
+        /// the <see cref="VodSearchTerms.Character"/> property is null/empty</returns>
+        private bool SearchTermsJustHasPlayer(VodSearchTerms searchTerms)
+        {
+            return string.IsNullOrWhiteSpace(searchTerms.Character) && !string.IsNullOrWhiteSpace(searchTerms.Player);
         }
     }
 }
