@@ -21,17 +21,17 @@ namespace Ushio.Core
     /// </summary>
     public class VodSearchEngine
     {
-        private const char RightBlackLenticularBracket = '】';
-        private const char LeftBlackLenticularBracket = '【';
         private readonly YouTubeApiService _youTubeApiService;
         private readonly FightingGameVodRepository _fightingGameVodRepository;
         private readonly Random _rnd;
+        private readonly VodTitleParser _vodTitleParser;
 
         public VodSearchEngine(FightingGameVodRepository repo, YouTubeApiService apiSvc)
         {
             _fightingGameVodRepository = repo;
             _youTubeApiService = apiSvc;
             _rnd = new Random();
+            _vodTitleParser = new VodTitleParser();
         }
 
         /// <summary>
@@ -132,240 +132,15 @@ namespace Ushio.Core
                 VideoId = ytVideo.Id,
                 GameName = ytVideo.GameName,
                 SourceChannel = ytVideo.SourceChannel,
-                Player1 = ParsePlayerFromVideoTitle(ytVideo),
-                Player2 = ParsePlayerFromVideoTitle(ytVideo, parsePlayer2: true),
-                CharacterP1 = ParseCharacterFromVideoTitle(ytVideo),
-                CharacterP2 = ParseCharacterFromVideoTitle(ytVideo, parsePlayer2Char: true),
+                Player1 = _vodTitleParser.ParsePlayerFromVideoTitle(ytVideo),
+                Player2 = _vodTitleParser.ParsePlayerFromVideoTitle(ytVideo, parsePlayer2: true),
+                CharacterP1 = _vodTitleParser.ParseCharacterFromVideoTitle(ytVideo),
+                CharacterP2 = _vodTitleParser.ParseCharacterFromVideoTitle(ytVideo, parsePlayer2Char: true),
                 DateUploaded = ytVideo.DateUploaded,
                 DateAddedToRepo = DateTimeOffset.Now
             };
 
             return fgVod;
-        }
-
-        private string ParsePlayerFromVideoTitle(YouTubeVideo ytVideo, bool parsePlayer2 = false)
-        {
-            var playerName = string.Empty;
-            
-            if (ytVideo.SourceChannel.ToLower() == "guilty gear strive movies")
-            {
-                Regex ggstmPlayerRegex;
-                /*
-                 * (?<=)
-                 *    Positive lookbehind. For player 2, we want to start at
-                 *    the "vs" towards the start of the string. For player 1,
-                 *    we want to start at the first closing bracket.
-                 *    
-                 * ?(?=)
-                 *    Non-greedy lookahead. Player 1 will stop at the first "vs" and
-                 *    player 2 will stop at the first opening parenthesis. Player 1 
-                 *    needs a non-greedy lookahead because the regex will capture 
-                 *    everything to the very last "vs" it encounters (i.e., the "vs"
-                 *    that separates the characters that the players are using).
-                 *    
-                 *  This is using a blanket capture because regex doesn't play nicely
-                 *  with Japanese characters. This might be a roadblock in the future.
-                 */
-                if (parsePlayer2)
-                {
-                    ggstmPlayerRegex = new Regex(@"(?<=vs).*(?=\()");
-                }
-                else
-                {
-                    ggstmPlayerRegex = new Regex(@"(?<=]).*?(?=vs)");
-                }
-
-                var ggstmPlayerRgxMatch = ggstmPlayerRegex.Match(ytVideo.Title);
-
-                if (ggstmPlayerRgxMatch.Success)
-                {
-                    playerName = ggstmPlayerRgxMatch.Value.Trim();
-                }
-            }
-            else if (ytVideo.SourceChannel.Contains("Kakuto"))
-            {
-                string playerAndCharacter;
-
-                if (parsePlayer2)
-                {
-                    playerAndCharacter = FightingGameVillageTitleParser(ytVideo.Title, parsePlayer2);
-                }
-                else
-                {
-                    playerAndCharacter = FightingGameVillageTitleParser(ytVideo.Title);
-                }
-
-                var openingParenthesisIdx = playerAndCharacter.IndexOf('(');
-                playerName = playerAndCharacter.Substring(0, openingParenthesisIdx);
-            }
-            else if (ytVideo.SourceChannel.ToLower() == "gamestorage ch")
-            {
-                string playerAndCharacter;
-
-                if (parsePlayer2)
-                {
-                    playerAndCharacter = GamestorageChTitleParser(ytVideo.Title, parsePlayer2);
-                }
-                else
-                {
-                    playerAndCharacter = GamestorageChTitleParser(ytVideo.Title);
-                }
-
-                var openingParenthesisIdx = playerAndCharacter.IndexOf('(');
-                playerName = playerAndCharacter.Substring(0, openingParenthesisIdx);
-            }
-
-            return playerName;
-        }
-
-        private string ParseCharacterFromVideoTitle(YouTubeVideo ytVideo, bool parsePlayer2Char = false)
-        {
-            var characterName = string.Empty;
-
-            if (ytVideo.SourceChannel.ToLower() == "guilty gear strive movies")
-            {
-                Regex ggsmCharacterRegex = new(@"(?<=\s)\((.+) vs (.+)\)");
-                var charNameMatch = ggsmCharacterRegex.Match(ytVideo.Title);
-
-                if (charNameMatch.Success)
-                {
-                    if (parsePlayer2Char)
-                    {
-                        characterName = charNameMatch.Groups[2].Value;
-                    }
-                    else
-                    {
-                        characterName = charNameMatch.Groups[1].Value;
-                    }
-                }
-            }
-            else if (ytVideo.SourceChannel.Contains("Kakuto"))
-            {
-                string playerAndCharacter;
-
-                if (parsePlayer2Char)
-                {
-                    playerAndCharacter = FightingGameVillageTitleParser(ytVideo.Title, parsePlayer2Char);
-                }
-                else
-                {
-                    playerAndCharacter = FightingGameVillageTitleParser(ytVideo.Title);
-                }
-
-                // Add 1 to the index since we want to start the substring after the opening parenthesis
-                var openParenthesisIndex = playerAndCharacter.IndexOf('(') + 1;
-                characterName = playerAndCharacter[openParenthesisIndex..].Replace(")", string.Empty);
-            }
-            else if (ytVideo.SourceChannel.ToLower() == "gamestorage ch")
-            {
-                string playerAndCharacter;
-
-                if (parsePlayer2Char)
-                {
-                    playerAndCharacter = GamestorageChTitleParser(ytVideo.Title, parsePlayer2Char);
-                }
-                else
-                {
-                    playerAndCharacter = GamestorageChTitleParser(ytVideo.Title);
-                }
-
-                // Add 1 to the index since we want to start the substring after the opening parenthesis
-                var openParenthesisIndex = playerAndCharacter.IndexOf('(') + 1;
-                characterName = playerAndCharacter[openParenthesisIndex..].Replace(")", string.Empty);
-            }
-
-            return characterName;
-        }
-
-        /// <summary>
-        /// Given a video title from Fighting Game Village's channel, get the character and the player
-        /// from the title
-        /// </summary>
-        /// <param name="title">The title of the YouTube video</param>
-        /// <param name="getPlayer2">If true, will get the information for player 2. Default is false (player 1)</param>
-        /// <returns>The desired player and their character from the title as a string</returns>
-        private string FightingGameVillageTitleParser(string title, bool getPlayer2 = false)
-        {
-            int commaIdx = title.LastIndexOf(',');
-            int pointer = commaIdx;
-            string data;
-
-            if (getPlayer2)
-            {
-                // We need to move forward from the comma
-                pointer = ParsePlayer2ContentFromTitle(title, pointer);
-
-                data = title.AsSpan(commaIdx + 1, pointer - commaIdx).ToString().Trim();
-            }
-            else
-            {
-                // We need to move backwards from the comma
-                pointer = ParsePlayer1ContentFromTitle(title, pointer);
-
-                data = title.AsSpan(pointer, commaIdx - pointer).ToString().Trim();
-            }
-
-            return data;
-
-            int ParsePlayer1ContentFromTitle(string title, int pointer)
-            {
-                while (true)
-                {
-                    --pointer;
-                    if (pointer < 0 || title[pointer] == ' ')
-                    {
-                        break;
-                    }
-                }
-
-                return pointer;
-            }
-
-            int ParsePlayer2ContentFromTitle(string title, int pointer)
-            {
-                while (true)
-                {
-                    ++pointer;
-                    if (pointer > title.Length || title[pointer] == LeftBlackLenticularBracket)
-                    {
-                        pointer--;
-                        break;
-                    }
-                }
-
-                return pointer;
-            }
-        }
-
-        /// <summary>
-        /// Given a video title from Gamestorage Ch, get the character and player from the title
-        /// </summary>
-        /// <param name="title">The title of the YouTube video</param>
-        /// <param name="getPlayer2">If true, will get the information for player 2. Default is false (player 1)</param>
-        /// <returns>The desired player and their character from the title as a string</returns>
-        private string GamestorageChTitleParser(string title, bool getPlayer2 = false)
-        {
-            Regex gamestorageTitleRegex = new($@"(?<={RightBlackLenticularBracket})(.*)vs(.*\))");
-            string player1;
-            string player2;
-            var playerTitleSegment = gamestorageTitleRegex.Match(title);
-
-            if (playerTitleSegment.Success)
-            {
-                player1 = playerTitleSegment.Groups[1].Value.Trim();
-                player2 = playerTitleSegment.Groups[2].Value.Trim();
-
-                if (getPlayer2)
-                {
-                    return player2;
-                }
-                else
-                {
-                    return player1;
-                }
-            }
-
-            return string.Empty;
         }
     }
 }

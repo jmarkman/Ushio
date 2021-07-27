@@ -12,18 +12,22 @@ namespace Ushio.Data.YouTube
         /// The title of the video as a user would see it on YouTube
         /// </summary>
         public string Title { get; set; }
+
         /// <summary>
         /// The id snippet of the video URL
         /// </summary>
         public string Id { get; set; }
+
         /// <summary>
         /// The channel where this video originated from
         /// </summary>
         public string SourceChannel { get; set; }
+
         /// <summary>
         /// The game this video is about
         /// </summary>
         public FightingGameName GameName { get; set; }
+
         /// <summary>
         /// The date this video was uploaded to YouTube
         /// </summary>
