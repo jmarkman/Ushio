@@ -25,11 +25,13 @@ namespace Ushio.Core
         private readonly FightingGameVodRepository _fightingGameVodRepository;
         private readonly Random _rnd;
         private readonly VodTitleParser _vodTitleParser;
+        private readonly UshioConstants _ushioConstants;
 
-        public VodSearchEngine(FightingGameVodRepository repo, YouTubeApiService apiSvc)
+        public VodSearchEngine(FightingGameVodRepository repo, YouTubeApiService apiSvc, UshioConstants constants)
         {
             _fightingGameVodRepository = repo;
             _youTubeApiService = apiSvc;
+            _ushioConstants = constants;
             _rnd = new Random();
             _vodTitleParser = new VodTitleParser();
         }
@@ -102,7 +104,7 @@ namespace Ushio.Core
         /// <returns>A singular <see cref="YouTubeVideo"/> randomly chosen from the search results</returns>
         private async Task<YouTubeVideo> GetVodFromYouTubeApi(FightingGameName gameName, VodSearchTerms searchTerms)
         {
-            var vods = await _youTubeApiService.GetSpecifiedVodsAsync(gameName, searchTerms);
+            var vods = await GetSpecifiedVodsAsync(gameName, searchTerms);
 
             List<FightingGameVod> vodsToStoreInDatabase = new();
 
@@ -116,6 +118,84 @@ namespace Ushio.Core
             await _fightingGameVodRepository.SaveChangesAsync();
 
             return vods[_rnd.Next(vods.Count)];
+        }
+
+        /// <summary>
+        /// Retrieves a list of vods from a randomly chosen vod channel based on the provided game and
+        /// search terms
+        /// </summary>
+        /// <param name="gameName">An enum representing the desired game</param>
+        /// <param name="searchTerms">A POCO that will hold either a character name, player name, or both</param>
+        /// <returns>A list of <see cref="YouTubeVideo"/> objects representing vods, filtered by the <see cref="VodSearchTerms"/> object</returns>
+        private async Task<List<YouTubeVideo>> GetSpecifiedVodsAsync(FightingGameName fgName, VodSearchTerms searchTerms)
+        {
+            List<YouTubeVideo> vods;
+            var vodChannelsForSpecifiedGame = _ushioConstants.VodChannels.Where(ch => Enum.Parse<FightingGameName>(ch.GetEnumFromGame()) == fgName).ToList();
+            var channel = vodChannelsForSpecifiedGame[_rnd.Next(vodChannelsForSpecifiedGame.Count)];
+
+            Regex vodRegex = GenerateSearchRegexForChannel(channel.Name, searchTerms);
+
+            var channelItems = await _youTubeApiService.GetVideosFromPlaylistAsync(vodRegex, channel.Id);
+
+            vods = channelItems.Select(y => new YouTubeVideo
+            {
+                Title = y.Snippet.Title,
+                Id = y.Snippet.ResourceId.VideoId,
+                SourceChannel = channel.Name,
+                GameName = fgName,
+                DateUploaded = new DateTimeOffset(y.ContentDetails.VideoPublishedAt.Value)
+            }).ToList();
+
+            return vods;
+        }
+
+        /// <summary>
+        /// Based on the channel name and search terms, constructs a regex to use when filtering
+        /// vods by title.
+        /// </summary>
+        /// <param name="channelName">The name of the channel that will be combed for vods</param>
+        /// <param name="searchTerms">The vod filtering POCO</param>
+        /// <returns>A regex that works for the current channel's naming scheme for vod titles</returns>
+        private Regex GenerateSearchRegexForChannel(string channelName, VodSearchTerms searchTerms)
+        {
+            Regex rgx;
+
+            if (SearchTermsJustHasCharacter(searchTerms))
+            {
+                if (channelName.Contains("Kakuto") || channelName.ToLower() == "gamestorage ch")
+                {
+                    rgx = new Regex($@"\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
+                }
+                else if (channelName.ToLower() == "guilty gear strive movies")
+                {
+                    rgx = new Regex($@"\/{searchTerms.Character}", RegexOptions.IgnoreCase);
+                }
+                else
+                {
+                    rgx = new Regex($"{searchTerms.Character}", RegexOptions.IgnoreCase);
+                }
+            }
+            else if (SearchTermsJustHasPlayer(searchTerms))
+            {
+                rgx = new Regex($"{searchTerms.Player}", RegexOptions.IgnoreCase);
+            }
+            else
+            {
+                if (channelName.Contains("Kakuto") || channelName.ToLower() == "gamestorage ch")
+                {
+                    rgx = new Regex($@"{searchTerms.Player}\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
+                }
+                else if (channelName.ToLower() == "guilty gear strive movies")
+                {
+                    rgx = new Regex($@"{searchTerms.Player}.*?\b(?<=\/){searchTerms.Character}\b", RegexOptions.IgnoreCase);
+                }
+                else
+                {
+                    rgx = new Regex($@"{searchTerms.Player}\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
+                }
+            }
+
+            return rgx;
         }
 
         /// <summary>

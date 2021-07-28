@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
+using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,51 +19,11 @@ namespace Ushio.ApiServices
     {
         private readonly string _apiKey;
         private readonly YouTubeService _ytService;
-        private readonly UshioConstants _ushioConstants;
-        private readonly Random _rnd;
 
         public YouTubeApiService(string key, UshioConstants ushioConstants)
         {
             _apiKey = key;
             _ytService = CreateYouTubeApiService();
-            _ushioConstants = ushioConstants;
-            _rnd = new Random();
-        }
-
-        /// <summary>
-        /// Retrieves a list of vods from a randomly chosen vod channel based on the provided game and
-        /// search terms
-        /// </summary>
-        /// <param name="gameName">An enum representing the desired game</param>
-        /// <param name="searchTerms">A POCO that will hold either a character name, player name, or both</param>
-        /// <returns>A list of <see cref="YouTubeVideo"/> objects representing vods, filtered by the <see cref="VodSearchTerms"/> object</returns>
-        public async Task<List<YouTubeVideo>> GetSpecifiedVodsAsync(FightingGameName gameName, VodSearchTerms searchTerms)
-        {
-            List<YouTubeVideo> vods = new();
-            var vodChannelsForSpecifiedGame = _ushioConstants.VodChannels.Where(ch => Enum.Parse<FightingGameName>(ch.GetEnumFromGame()) == gameName).ToList();
-            var channel = vodChannelsForSpecifiedGame[_rnd.Next(vodChannelsForSpecifiedGame.Count)];
-
-            Regex vodRegex = GenerateSearchRegexForChannel(channel.Name, searchTerms);
-
-            await PopulateVideoCollectionAsync(vods, vodRegex, gameName, channel.Id, channel.Name);
-
-            return vods;
-        }
-
-        /// <summary>
-        /// Retrieves a random Third Strike clip from the 3rd STRIKE channel on YouTube. These clips are in the
-        /// format "clip####", sometimes with a space and additional text after the number.
-        /// </summary>
-        /// <returns>The <see cref="YouTubeVideo"/> object for the (psuedo)randomly chosen clip</returns>
-        public async Task<YouTubeVideo> GetRandomThirdStrikeClip()
-        {
-            List<YouTubeVideo> thirdStrikeClips = new();
-            var clipRegex = new Regex(@"clip[0-9]{1,4}", RegexOptions.IgnoreCase);
-            var thirdStrikeChannelId = _ushioConstants.VodChannels.Where(x => x.Name.ToLower() == "3rd strike").Select(y => y.Id).FirstOrDefault();
-
-            //await PopulateVideoCollectionAsync(thirdStrikeClips, thirdStrikeChannelId, clipRegex);
-
-            return thirdStrikeClips[_rnd.Next(thirdStrikeClips.Count)];
         }
 
         /// <summary>
@@ -71,7 +32,7 @@ namespace Ushio.ApiServices
         /// </summary>
         /// <param name="channelId">The unique Id for the vod channel</param>
         /// <returns>A list of <see cref="YouTubePlaylist"/> objects representing the playlists made for the channel</returns>
-        private async Task<List<YouTubePlaylist>> GetPlaylistsForChannelAsync(string channelId)
+        public async Task<List<YouTubePlaylist>> GetPlaylistsForChannelAsync(string channelId)
         {
             var playlistRequest = _ytService.Playlists.List("snippet");
             playlistRequest.ChannelId = channelId;
@@ -89,12 +50,11 @@ namespace Ushio.ApiServices
         /// playlist for that user's channel, so YouTube recognizes everything as a playlist.
         /// This is why the parameter name for the playlist ID can be either a channel ID
         /// or a playlist ID.</remarks>
-        /// <param name="vodCollection">The <see cref="List{YouTubeVideo}"/> holding the videos</param>
         /// <param name="playlistId">The playlist to retrieve videos from</param>
-        /// <param name="channelName">The channel name associated with the video</param>
-        /// <param name="vodRegex">Regex filter</param>
-        private async Task PopulateVideoCollectionAsync(List<YouTubeVideo> vodCollection, Regex vodRegex, FightingGameName gameName, string playlistId, string channelName)
+        /// <param name="titleRegex">Regex filter</param>
+        public async Task<List<PlaylistItem>> GetVideosFromPlaylistAsync(Regex titleRegex, string playlistId)
         {
+            List<PlaylistItem> playlistItems = new();
             var nextPageToken = string.Empty;
 
             while (nextPageToken != null)
@@ -108,70 +68,14 @@ namespace Ushio.ApiServices
 
                 var currVideos = videoResponse.Items;
 
-                var clips = currVideos.Where(x => vodRegex.IsMatch(x.Snippet.Title))
-                                         .Select(y => new YouTubeVideo
-                                         {
-                                             Title = y.Snippet.Title,
-                                             Id = y.Snippet.ResourceId.VideoId,
-                                             SourceChannel = channelName,
-                                             GameName = gameName,
-                                             DateUploaded = new DateTimeOffset(y.ContentDetails.VideoPublishedAt.Value)
-                                         })
-                                         .ToList();
+                var clips = currVideos.Where(x => titleRegex.IsMatch(x.Snippet.Title)).ToList();
 
-                vodCollection.AddRange(clips);
+                playlistItems.AddRange(clips);
 
                 nextPageToken = videoResponse.NextPageToken;
             }
-        }
 
-        /// <summary>
-        /// Based on the channel name and search terms, constructs a regex to use when filtering
-        /// vods by title.
-        /// </summary>
-        /// <param name="channelName">The name of the channel that will be combed for vods</param>
-        /// <param name="searchTerms">The vod filtering POCO</param>
-        /// <returns>A regex that works for the current channel's naming scheme for vod titles</returns>
-        private Regex GenerateSearchRegexForChannel(string channelName, VodSearchTerms searchTerms)
-        {
-            Regex rgx = null;
-
-            if (SearchTermsJustHasCharacter(searchTerms))
-            {
-                if (channelName.Contains("Kakuto") || channelName.ToLower() == "gamestorage ch")
-                {
-                    rgx = new Regex($@"\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
-                }
-                else if (channelName.ToLower() == "guilty gear strive movies")
-                {
-                    rgx = new Regex($@"\/{searchTerms.Character}", RegexOptions.IgnoreCase);
-                }
-                else
-                {
-                    rgx = new Regex($"{searchTerms.Character}", RegexOptions.IgnoreCase);
-                }
-            }
-            else if (SearchTermsJustHasPlayer(searchTerms))
-            {
-                rgx = new Regex($"{searchTerms.Player}", RegexOptions.IgnoreCase);
-            }
-            else
-            {
-                if (channelName.Contains("Kakuto") || channelName.ToLower() == "gamestorage ch")
-                {
-                    rgx = new Regex($@"{searchTerms.Player}\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
-                }
-                else if (channelName.ToLower() == "guilty gear strive movies")
-                {
-                    rgx = new Regex($@"{searchTerms.Player}.*?\b(?<=\/){searchTerms.Character}\b", RegexOptions.IgnoreCase);
-                }
-                else
-                {
-                    rgx = new Regex($@"{searchTerms.Player}\({searchTerms.Character}\)", RegexOptions.IgnoreCase);
-                }
-            }
-
-            return rgx;
+            return playlistItems;
         }
 
         /// <summary>
@@ -187,30 +91,6 @@ namespace Ushio.ApiServices
             });
 
             return ytSvc;
-        }
-
-        /// <summary>
-        /// Wrapper for boolean logic to determine if the end user only provided a character
-        /// as a search term
-        /// </summary>
-        /// <param name="searchTerms"></param>
-        /// <returns>True if the <see cref="VodSearchTerms.Character"/> property is not null/empty and
-        /// the <see cref="VodSearchTerms.Player"/> property is null/empty</returns>
-        private bool SearchTermsJustHasCharacter(VodSearchTerms searchTerms)
-        {
-            return !string.IsNullOrWhiteSpace(searchTerms.Character) && string.IsNullOrWhiteSpace(searchTerms.Player);
-        }
-
-        /// <summary>
-        /// Wrapper for boolean logic to determine if the end user only provided a player
-        /// as a search term
-        /// </summary>
-        /// <param name="searchTerms"></param>
-        /// <returns>True if the <see cref="VodSearchTerms.Player"/> property is not null/empty and
-        /// the <see cref="VodSearchTerms.Character"/> property is null/empty</returns>
-        private bool SearchTermsJustHasPlayer(VodSearchTerms searchTerms)
-        {
-            return string.IsNullOrWhiteSpace(searchTerms.Character) && !string.IsNullOrWhiteSpace(searchTerms.Player);
         }
     }
 }
