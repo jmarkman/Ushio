@@ -8,49 +8,22 @@ namespace Ushio.Core.Tests
         [Fact]
         public void ParseCharacterFromTitleCorrectly()
         {
-            //TODO: Extract test data creation to separate class
-            // Guilty Gear Strive MOVIES
-            var ggstMOVIESExampleTitle = "[GGST] ぶりーど vs Kazunoko (レオ/LEO vs チップ/CHIPP) [GUILTY GEAR STRIVE/ギルティギアストライヴ]";
-            var ggstMOVIESChannelName = "Guilty Gear Strive MOVIES";
-            var ggstMOVIESExpectedCharacterName = "Leo";
-
-            YouTubeVideo ggstMOVIESChannelVod = new()
-            {
-                Title = ggstMOVIESExampleTitle,
-                SourceChannel = ggstMOVIESChannelName
-            };
-
-            // Fighting Game Village
-            var fgvExampleTitle = "Daru(イノ/Ino) vs T5M7(レオ/Leo) Guilty Gear Strive 天上階対戦【GGST】60fps";
-            var fgvChannelName = "Kakuto gemu-mura (Fighting Game Village)";
-            var fgvExpectedCharacterName = "Ino";
-
-            YouTubeVideo fgvChannelVod = new()
-            {
-                Title = fgvExampleTitle,
-                SourceChannel = fgvChannelName
-            };
-
-            // Gamestorage Ch
-            var gschExampleTitle = "【Guilty Gear Strive】Domi(Anji) vs GNT(Leo) High Level Gameplay【GGST】【PS4pro/60FPS】";
-            var gschChannelName = "GameStorage Ch";
-            var gschExpectedCharacterName = "Anji";
-
-            YouTubeVideo gschChannelVod = new()
-            {
-                Title = gschExampleTitle,
-                SourceChannel = gschChannelName
-            };
-
             var vtpUnderTest = new VodTitleParser();
 
-            var ggstMOVIESReturnedCharacterName = vtpUnderTest.ParseCharacterFromVideoTitle(ggstMOVIESChannelVod);
-            var fgvReturnedCharacterName = vtpUnderTest.ParseCharacterFromVideoTitle(fgvChannelVod);
-            var gschReturnedCharacterName = vtpUnderTest.ParseCharacterFromVideoTitle(gschChannelVod);
+            var testData = TestCaseGenerator.GetParseCharacterFromTitleTestData();
 
-            Assert.Equal(ggstMOVIESExpectedCharacterName, ggstMOVIESReturnedCharacterName);
-            Assert.Equal(fgvExpectedCharacterName, fgvReturnedCharacterName);
-            Assert.Equal(gschExpectedCharacterName, gschReturnedCharacterName);
+            foreach (var mock in testData)
+            {
+                YouTubeVideo ytVideo = new()
+                {
+                    Title = mock.Title,
+                    SourceChannel = mock.Channel
+                };
+
+                var returnedCharacterName = vtpUnderTest.ParseCharacterFromVideoTitle(ytVideo);
+
+                Assert.Equal(mock.SearchTerm, returnedCharacterName);
+            }
         }
 
         [Fact]
@@ -86,21 +59,22 @@ namespace Ushio.Core.Tests
         [Fact]
         public void ParsePlayer1FromTitleCorrectly()
         {
-            var ggstMOVIESExampleTitle = "[GGST] ぶりーど vs Kazunoko (レオ/LEO vs チップ/CHIPP) [GUILTY GEAR STRIVE/ギルティギアストライヴ]";
-            var ggstMOVIESChannelName = "Guilty Gear Strive MOVIES";
-            var ggstMOVIESExpectedPlayerName = "ぶりーど";
-
-            YouTubeVideo ggstMOVIESChannelVod = new()
-            {
-                Title = ggstMOVIESExampleTitle,
-                SourceChannel = ggstMOVIESChannelName
-            };
-
             var vtpUnderTest = new VodTitleParser();
 
-            var ggstMOVIESReturnedPlayerName = vtpUnderTest.ParsePlayerFromVideoTitle(ggstMOVIESChannelVod);
+            var testData = TestCaseGenerator.GetParsePlayerFromTitleTestData();
 
-            Assert.Equal(ggstMOVIESExpectedPlayerName, ggstMOVIESReturnedPlayerName);
+            foreach (var mock in testData)
+            {
+                YouTubeVideo ytVideo = new()
+                {
+                    Title = mock.Title,
+                    SourceChannel = mock.Channel
+                };
+
+                var returnPlayerName = vtpUnderTest.ParsePlayerFromVideoTitle(ytVideo);
+
+                Assert.Equal(mock.SearchTerm, returnPlayerName);
+            }
         }
     }
 }
