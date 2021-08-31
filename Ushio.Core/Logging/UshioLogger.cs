@@ -40,6 +40,12 @@ namespace Ushio.Core.Logging
 
             var logFileInfo = new FileInfo(_logFile);
 
+            if (!logFileInfo.Exists)
+            {
+                logFileInfo.Create().Dispose();
+                logFileInfo.Refresh();
+            }
+
             using var logWriter = logFileInfo.AppendText();
             logWriter.WriteLine(logText);
 
@@ -85,7 +91,7 @@ namespace Ushio.Core.Logging
 
         private string CreateLogFilename(DateTime dt)
         {
-            return $"UshioLog-{dt:MMM dd yyyy, HH.mm.ss}.txt";
+            return $"UshioLog-{dt:MMM dd yyyy--HH.mm.ss}.txt";
         }
     }
 }

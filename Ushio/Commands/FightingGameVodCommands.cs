@@ -19,7 +19,7 @@ namespace Ushio.Commands
 
         public FightingGameVodCommands(FightingGameVodRepository fgVodRepo, YouTubeApiService ytApiSvc, UshioConstants constants)
         {
-            vodSearchEngine = new VodSearchEngine(fgVodRepo, ytApiSvc);
+            vodSearchEngine = new VodSearchEngine(fgVodRepo, ytApiSvc, constants);
             ushioConstants = constants;
         }
 

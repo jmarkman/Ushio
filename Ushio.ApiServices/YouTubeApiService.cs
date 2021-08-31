@@ -1,12 +1,10 @@
 ﻿using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Ushio.Data;
 using Ushio.Data.YouTube;
 
 namespace Ushio.ApiServices
@@ -20,7 +18,7 @@ namespace Ushio.ApiServices
         private readonly string _apiKey;
         private readonly YouTubeService _ytService;
 
-        public YouTubeApiService(string key, UshioConstants ushioConstants)
+        public YouTubeApiService(string key)
         {
             _apiKey = key;
             _ytService = CreateYouTubeApiService();
