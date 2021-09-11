@@ -25,4 +25,16 @@
     <ProjectReference Include="..\Ushio.Core\Ushio.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\ParseCharacterFromTitle.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\ParseFirstPlayerFromTitle.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\ParseSecondPlayerFromTitle.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

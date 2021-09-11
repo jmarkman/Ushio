@@ -7,7 +7,8 @@ namespace Ushio.Core.Tests
     internal static class TestCaseGenerator
     {
         private static readonly string ParseCharacterFromTitleDataPath = "Data\\ParseCharacterFromTitle.json";
-        private static readonly string ParsePlayerFromTitleDataPath = "Data\\ParsePlayerFromTitle.json";
+        private static readonly string ParseFirstPlayerFromTitleDataPath = "Data\\ParseFirstPlayerFromTitle.json";
+        private static readonly string ParseSecondPlayerFromTitleDataPath = "Data\\ParseSecondPlayerFromTitle.json";
 
         public static List<ParseTestCase> GetParseCharacterFromTitleTestData()
         {
@@ -15,9 +16,15 @@ namespace Ushio.Core.Tests
             return JsonConvert.DeserializeObject<List<ParseTestCase>>(json);
         }
 
-        public static List<ParseTestCase> GetParsePlayerFromTitleTestData()
+        public static List<ParseTestCase> GetParseFirstPlayerFromTitleTestData()
         {
-            var json = File.ReadAllText(ParsePlayerFromTitleDataPath);
+            var json = File.ReadAllText(ParseFirstPlayerFromTitleDataPath);
+            return JsonConvert.DeserializeObject<List<ParseTestCase>>(json);
+        }
+        
+        public static List<ParseTestCase> GetParseSecondPlyerFromTitleTestData()
+        {
+            var json = File.ReadAllText(ParseSecondPlayerFromTitleDataPath);
             return JsonConvert.DeserializeObject<List<ParseTestCase>>(json);
         }
     }
