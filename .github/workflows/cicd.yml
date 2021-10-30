@@ -34,7 +34,7 @@ jobs:
       PASSPHRASE: ${{ secrets.SSHPASSPHRASE }}
      with:
       source: "."
-      target: "/home/gr8stalin/ushio"
+      target: "/home/gr8stalin/ushiobot"
 
    - name: Start bot
      uses: appleboy/ssh-action@master
