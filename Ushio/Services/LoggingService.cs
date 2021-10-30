@@ -1,52 +1,40 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ushio.Services
 {
     public class LoggingService
     {
-        private readonly ILoggerFactory _factory;
-        private readonly DiscordSocketClient _socketClient;
+        private readonly DiscordSocketClient _client;
         private readonly CommandService _cmdService;
 
-        public LoggingService(DiscordSocketClient client, CommandService commands, ILoggerFactory factory)
+        public LoggingService(DiscordSocketClient client, CommandService commands)
         {
-            _factory = factory;
             _cmdService = commands;
-            _socketClient = client;
+            _client = client;
         }
 
 
         public void Start()
         {
             _cmdService.Log += OnLogAsync;
-            _socketClient.Log += OnLogAsync;
+            _client.Log += OnLogAsync;
         }
 
         private Task OnLogAsync(LogMessage msg)
         {
-            var logger = _factory.CreateLogger(msg.Source);
-            var textMsg = msg.Exception?.ToString() ?? msg.Message;
-
-            switch (msg.Severity)
+            if (msg.Exception is CommandException commandException)
             {
-                case LogSeverity.Critical:
-                case LogSeverity.Error:
-                    logger.LogError(textMsg);
-                    break;
-                case LogSeverity.Warning:
-                    logger.LogWarning(textMsg);
-                    break;
-                case LogSeverity.Info:
-                case LogSeverity.Verbose:
-                case LogSeverity.Debug:
-                    logger.LogInformation(textMsg);
-                    break;
-                default:
-                    break;
+                Console.WriteLine($"[Command | {msg.Severity}] {commandException.Command.Aliases[0]} failed to execute in {commandException.Context.Channel}");
+                Console.WriteLine(commandException);
+            }    
+            else
+            {
+                Console.WriteLine($"[Command | {msg.Severity}] {msg}");
             }
 
             return Task.CompletedTask;

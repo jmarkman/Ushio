@@ -14,10 +14,4 @@
     <ProjectReference Include="..\Ushio.Infrastructure\Ushio.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="DataSources\Fortunes.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

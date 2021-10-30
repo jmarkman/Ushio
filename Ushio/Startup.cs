@@ -9,12 +9,10 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Ushio.ApiServices;
-using Microsoft.Extensions.Logging;
 using Ushio.Data;
 using Ushio.Infrastructure.Database;
 using Ushio.Infrastructure.Database.Repositories;
 using Ushio.Services;
-using Ushio.Core.Logging;
 using Ushio.Core;
 
 namespace Ushio
@@ -47,8 +45,6 @@ namespace Ushio
             await commands.AddModulesAsync(Assembly.GetExecutingAssembly(), provider);
 
             await provider.GetRequiredService<CommandHandlingService>().StartAsync();
-            provider.GetRequiredService<ILoggerFactory>().AddProvider(new UshioLoggerProvider());
-            provider.GetRequiredService<LoggingService>().Start();
 
             await Task.Delay(-1);
         }

@@ -29,7 +29,7 @@ namespace Ushio.Commands
         /// </summary>
         /// <param name="game">The game to look up</param>
         /// <param name="filter">An object containing named parameters for the command</param>
-        [Command("vod")]
+        //[Command("vod")]
         public async Task GetVod(string game, VodFilter filter)
         {
             var searchTerms = new VodSearchTerms { Character = filter.Character, Player = filter.Player };
@@ -55,7 +55,7 @@ namespace Ushio.Commands
         /// random clip.
         /// </summary>
         /// <param name="clipNumber">The number part of the title</param>
-        [Command("3s")]
+        //[Command("3s")]
         public async Task GetThirdStrikeClip(string clipNumber = "")
         {
             await ReplyAsync("Not yet implemented");

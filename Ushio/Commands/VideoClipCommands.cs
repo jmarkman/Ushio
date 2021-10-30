@@ -23,7 +23,7 @@ namespace Ushio.Commands
         /// third-party media links like YouTube, Twitch, etc.
         /// </summary>
         /// <param name="clipTitle">The title associated with the clip when it was first added</param>
-        [Command("clip")]
+        //[Command("clip")]
         public async Task GetClipByMatchingTitle([Remainder]string clipTitle)
         {
             var requestedClip = (await _clipRepository.FindAsync(c => c.Title.ToLower() == $"{clipTitle.ToLower()}")).FirstOrDefault();
@@ -44,7 +44,7 @@ namespace Ushio.Commands
         /// third-party media links like YouTube, Twitch, etc.
         /// </summary>
         /// <param name="clipId">The numeric ID associated with the clip</param>
-        [Command("clip")]
+        //[Command("clip")]
         public async Task GetClipById(int clipId)
         {
             var requestedClip = (await _clipRepository.FindAsync(c => c.Id == clipId)).FirstOrDefault();
@@ -66,7 +66,7 @@ namespace Ushio.Commands
         /// <param name="title"></param>
         /// <returns>If successfully added, the clip's data as it exists in the database,
         /// which is sent as a message to the source channel</returns>
-        [Command("addclip")]
+        //[Command("addclip")]
         public async Task AddNewClip(string link, [Remainder]string title)
         {
             var possibleMatchingClips = await _clipRepository.FindAsync(c => c.Link.ToLower() == link.ToLower());

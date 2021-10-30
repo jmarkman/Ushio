@@ -2,7 +2,7 @@
 Probably not...?
 I don't think so
 Go for it!
-Vision hazy, ask another time...
+Vision hazy, ask later
 bruh lol
 Try it and see
 lol
@@ -11,12 +11,7 @@ Man plans and God laughs
 Reconsider your options
 I don't think I have enough Azure credits to figure this one out...
 Go for the hard read!
-This might blow up in your face
-HTTP 404: Fortune Not Found
-Consult a fortune cookie for this one, not me
-Might want to practice your combos instead
-I consulted Azure Cognitive Services and AWS SageMaker, and none of us know!
-Couldn't find anything in the database for you. Get me some firsthand experience as data!
+Consult a fortune cookie for this one
 Sounds like fate has come knocking
 Don't worry about it
-There isn't enough RAM on the planet to calculate an answer to this
+There isn't enough RAM on the planet to answer this
