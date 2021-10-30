@@ -1,12 +1,7 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Ushio.Data;
 
 namespace Ushio.Data
 {
@@ -22,9 +17,9 @@ namespace Ushio.Data
 
         public UshioConstants()
         {
-            _abbrFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"DataSources\gameAbbreviations.json");
-            _vodChannelFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"DataSources\vodChannels.json");
-            _fortunesPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"DataSources\Fortunes.txt");
+            _abbrFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Path.Join("DataSources", "gameAbbreviations.json"));
+            _vodChannelFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Path.Join("DataSources","vodChannels.json"));
+            _fortunesPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Path.Join("DataSources", "Fortunes.txt"));
         }
 
         public UshioConstants InitializeGameAbbreviations()
