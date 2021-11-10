@@ -2,9 +2,7 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Ushio.Commands.TypeReaders;
 
@@ -40,12 +38,12 @@ namespace Ushio.Services
 
         private async Task OnMessageReceivedAsync(SocketMessage socketMessage)
         {
-            if (!(socketMessage is SocketUserMessage msg))
+            if (socketMessage is not SocketUserMessage msg)
             {
                 return;
             }
 
-            if (!(socketMessage.Channel is SocketGuildChannel))
+            if (socketMessage.Channel is not SocketGuildChannel)
             {
                 return;
             }
@@ -53,7 +51,7 @@ namespace Ushio.Services
             int argPos = 0;
             var msgContext = new SocketCommandContext(_discordClient, msg);
 
-            if (msg.HasStringPrefix(_config["Prefix"], ref argPos))
+            if (msg.HasStringPrefix(_config["Prefix"], ref argPos) && msg.Content.Length > 1)
             {
                 var result = await _commandService.ExecuteAsync(msgContext, argPos, _serviceProvider);
 

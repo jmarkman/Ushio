@@ -15,13 +15,10 @@ namespace Ushio.Commands
     {
         private readonly UshioConstants _constants;
         private readonly Random _rnd;
-        private readonly string DDDHonkSlot = "<a:DDDHonkSlot:903452126490017792>";
-        private readonly string DDDHonkSlot2 = "<a:DDDHonkSlot2:903453676750921768>";
-        private readonly string DDDHonkSlot3 = "<a:DDDHonkSlot3:903454356517560340>";
 
         public RandomGenerationCommands(UshioConstants constants)
         {
-            _constants = constants.InitializeFortunes();
+            _constants = constants.InitializeFortunes().InitializeEmotes();
             _rnd = new Random();
         }
 
@@ -40,20 +37,52 @@ namespace Ushio.Commands
             await ReplyAsync(embed: constructor.CreateFortuneEmbed(question, fortune));
         }
 
-        [Command("slots")]
+        /// <summary>
+        /// Sends a "slot machine" message using all available roulette emotes
+        /// </summary>
+        [Command("slots", ignoreExtraArgs: true)]
+        public async Task EmoticonRoulette()
+        {
+            var allEmotes = _constants.Emotes;
+            await BuildAndSendEmoteString(allEmotes);
+        }
+
+        /// <summary>
+        /// Sends a "slot machine" message using the available "Blini"/CatJazz roulette emotes
+        /// </summary>
+        [Command("blinislots")]
+        public async Task BliniRoulette()
+        {
+            var bliniEmotes = _constants.Emotes.Where(e => e.Name.Contains("Blini")).ToList();
+            await BuildAndSendEmoteString(bliniEmotes);
+        }
+
+        /// <summary>
+        /// Sends a "slot machine" message using the available King Dedede roulette emotes
+        /// </summary>
+        [Command("dddslots")]
         public async Task KingDededeRoulette()
         {
-            List<Emote> dddSlots = new()
-            {
-                Emote.Parse(DDDHonkSlot),
-                Emote.Parse(DDDHonkSlot2),
-                Emote.Parse(DDDHonkSlot3)
-            };
+            var dddEmotes = _constants.Emotes.Where(e => e.Name.Contains("DDD")).ToList();
+            await BuildAndSendEmoteString(dddEmotes);
+        }
 
+        /// <summary>
+        /// Generates a "slot machine" effect with three different emotes
+        /// </summary>
+        /// <param name="emotes">A list of <see cref="DiscordEmote"/> objects containing pertinent
+        /// emote information</param>
+        /// <returns>A string representing a "slot machine"</returns>
+        private async Task BuildAndSendEmoteString(List<DiscordEmote> emotes)
+        {
             StringBuilder sb = new();
-            sb.Append(dddSlots.ElementAt(_rnd.Next(0, dddSlots.Count)).ToString());
-            sb.Append(dddSlots.ElementAt(_rnd.Next(0, dddSlots.Count)).ToString());
-            sb.Append(dddSlots.ElementAt(_rnd.Next(0, dddSlots.Count)).ToString());
+
+            for (int i = 0; i < 2; i++)
+            {
+                int rndIndex = _rnd.Next(0, emotes.Count);
+                var rouletteEmote = Emote.Parse(emotes[rndIndex].Identifier);
+                sb.Append(rouletteEmote.ToString());
+            }
 
             await ReplyAsync(sb.ToString());
         }
