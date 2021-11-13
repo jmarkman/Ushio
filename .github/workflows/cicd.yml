@@ -36,8 +36,8 @@ jobs:
       KEY: ${{ secrets.SSHKEY }}
       PASSPHRASE: ${{ secrets.SSHPASSPHRASE }}
      with:
-      source: "."
-      target: "/home/gr8stalin"
+      source: "./Ushio"
+      target: "/home/gr8stalin/Ushio"
 
    - name: Toggle bot
      uses: appleboy/ssh-action@master
