@@ -18,7 +18,7 @@ jobs:
    - run: dotnet test
 
    - name: Publish Bot
-     run: dotnet publish -c Release --output ./Ushio
+     run: dotnet publish -c Release --output ./Release
 
  deploy:
   needs: build
@@ -36,7 +36,7 @@ jobs:
       KEY: ${{ secrets.SSHKEY }}
       PASSPHRASE: ${{ secrets.SSHPASSPHRASE }}
      with:
-      source: "./Ushio"
+      source: "./Release"
       target: "/home/gr8stalin/Ushio"
 
    - name: Toggle bot
