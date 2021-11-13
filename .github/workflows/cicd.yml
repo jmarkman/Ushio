@@ -16,16 +16,16 @@ jobs:
 
    - run: dotnet build --configuration Release
    - run: dotnet test
-
-   - name: Publish Bot
-     run: dotnet publish -c Release --output Release
-
+   
  deploy:
   needs: build
   runs-on: ubuntu-latest
   steps:
    - name: Checkout Files
      uses: actions/checkout@v2
+
+   - name: Publish Bot
+     run: dotnet publish -c Release --output Release
 
    - name: Copy files via SCP
      uses: appleboy/scp-action@master
