@@ -39,7 +39,7 @@ jobs:
       source: "."
       target: "/home/gr8stalin"
 
-   - name: Stop bot
+   - name: Toggle bot
      uses: appleboy/ssh-action@master
      with:
       HOST: ${{ secrets.DROPLETHOST }}
@@ -47,16 +47,6 @@ jobs:
       PORT: ${{ secrets.DROPLETPORT }}
       KEY: ${{ secrets.SSHKEY }}
       PASSPHRASE: ${{ secrets.SSHPASSPHRASE }}
-      SCRIPT: screen -S ushiobot -p 0 -X stuff "^C"
-
-   - name: Start bot
-     uses: appleboy/ssh-action@master
-     with:
-      HOST: ${{ secrets.DROPLETHOST }}
-      USERNAME: ${{ secrets.DROPLETUSER }}
-      PORT: ${{ secrets.DROPLETPORT }}
-      KEY: ${{ secrets.SSHKEY }}
-      PASSPHRASE: ${{ secrets.SSHPASSPHRASE }}
-      SCRIPT: screen -dm -S ushiobot startbot.sh
+      SCRIPT: togglebot.sh
 
    
