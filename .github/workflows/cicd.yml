@@ -24,11 +24,6 @@ jobs:
    - name: Checkout Files
      uses: actions/checkout@v2
 
-   - name: Setup dotnet
-     uses: actions/setup-dotnet@v1
-     with:
-       dotnet-version: "6.0.100"
-       
    - name: Publish Bot
      run: dotnet publish -c Release --output Release
 
