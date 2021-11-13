@@ -339,3 +339,4 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 /Ushio/Common/appSettings.json
+/Ushio/appSettings.json
