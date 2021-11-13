@@ -36,7 +36,7 @@ jobs:
       KEY: ${{ secrets.SSHKEY }}
       PASSPHRASE: ${{ secrets.SSHPASSPHRASE }}
      with:
-      source: "/home/runner/work/Ushio/Ushio/Release"
+      source: "Release"
       target: "/home/gr8stalin/Ushio"
 
    - name: Toggle bot
