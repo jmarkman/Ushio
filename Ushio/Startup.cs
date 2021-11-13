@@ -4,7 +4,6 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -24,7 +23,7 @@ namespace Ushio
         public Startup(string[] args)
         {
             var cfgBuilder = new ConfigurationBuilder()
-                //.SetBasePath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Common"))
+                .SetBasePath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Common"))
                 .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true);
 
             _config = cfgBuilder.Build();
