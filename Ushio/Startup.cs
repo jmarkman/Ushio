@@ -24,7 +24,7 @@ namespace Ushio
         public Startup(string[] args)
         {
             var cfgBuilder = new ConfigurationBuilder()
-                .SetBasePath(Path.Combine(AppContext.BaseDirectory, "Common"))
+                .SetBasePath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Common"))
                 .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true);
 
             _config = cfgBuilder.Build();

@@ -77,7 +77,7 @@ namespace Ushio.Commands
         {
             StringBuilder sb = new();
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 3; i++)
             {
                 int rndIndex = _rnd.Next(0, emotes.Count);
                 var rouletteEmote = Emote.Parse(emotes[rndIndex].Identifier);
